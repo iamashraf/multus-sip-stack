@@ -1,0 +1,11 @@
+namespace: voice
+image: localhost/dispatcher-operator:local
+replicas: 2
+
+freeswitchService: freeswitch
+kamailioTargets:
+  - name: kamailio-a
+  - name: kamailio-b
+
+dispatcherGroup: 1
+port: 5060
