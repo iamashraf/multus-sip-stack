@@ -14,6 +14,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
@@ -50,14 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:                  scheme,
-		LeaderElection:          *leaderElect,
-		LeaderElectionID:        "dispatcher-operator-lock",
-		LeaderElectionNamespace: *namespace,
-		Metrics:                 metricsserver.Options{BindAddress: *metricsAddr},
-		HealthProbeBindAddress:  *healthAddr,
-	})
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), buildManagerOptions(scheme, *namespace, *metricsAddr, *healthAddr, *leaderElect))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "new manager: %v\n", err)
 		os.Exit(1)
@@ -93,6 +87,24 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		fmt.Fprintf(os.Stderr, "manager exited: %v\n", err)
 		os.Exit(1)
+	}
+}
+
+// buildManagerOptions builds the controller-runtime manager options. The
+// cache is restricted to namespace: the EndpointSlice informer must only
+// list/watch there, matching the namespaced RBAC Role (no ClusterRole is
+// granted for endpointslices).
+func buildManagerOptions(scheme *runtime.Scheme, namespace, metricsAddr, healthAddr string, leaderElect bool) ctrl.Options {
+	return ctrl.Options{
+		Scheme:                  scheme,
+		LeaderElection:          leaderElect,
+		LeaderElectionID:        "dispatcher-operator-lock",
+		LeaderElectionNamespace: namespace,
+		Metrics:                 metricsserver.Options{BindAddress: metricsAddr},
+		HealthProbeBindAddress:  healthAddr,
+		Cache: cache.Options{
+			DefaultNamespaces: map[string]cache.Config{namespace: {}},
+		},
 	}
 }
 

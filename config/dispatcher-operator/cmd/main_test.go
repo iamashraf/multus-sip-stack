@@ -5,6 +5,27 @@ import (
 	"testing"
 )
 
+// TestBuildManagerOptions_CacheScopedToNamespace pins the fix for the
+// cross-task RBAC gap: the manager's cache must be restricted to the
+// --namespace value, since the deployed RBAC Role only grants
+// list/watch on endpointslices (and leases) in that one namespace, not
+// cluster-wide. This is a structural check only (the built Options carry
+// the right namespace key) — it cannot verify the live RBAC behavior
+// itself; that needs a real cluster and is covered by Task 7's deploy.
+func TestBuildManagerOptions_CacheScopedToNamespace(t *testing.T) {
+	opts := buildManagerOptions(nil, "voice", ":8443", ":8081", true)
+
+	if opts.Cache.DefaultNamespaces == nil {
+		t.Fatal("Cache.DefaultNamespaces is nil, want it restricted to the given namespace")
+	}
+	if _, ok := opts.Cache.DefaultNamespaces["voice"]; !ok {
+		t.Errorf("Cache.DefaultNamespaces = %v, want a \"voice\" key", opts.Cache.DefaultNamespaces)
+	}
+	if len(opts.Cache.DefaultNamespaces) != 1 {
+		t.Errorf("Cache.DefaultNamespaces has %d entries, want exactly 1 (namespace-scoped, not cluster-wide)", len(opts.Cache.DefaultNamespaces))
+	}
+}
+
 func TestParseTargets(t *testing.T) {
 	cases := []struct {
 		name    string
