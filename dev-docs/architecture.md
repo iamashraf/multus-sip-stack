@@ -2,7 +2,7 @@
 
 A SIP voice stack on RKE2: an SBC hands calls to Kamailio, which dispatches to a FreeSWITCH pool, with rtpengine anchoring media between the SBC's voice network and the cluster's pod network. The design exists because standard Kubernetes networking (Services, kube-proxy, overlay NAT) cannot carry a SIP/RTP session without breaking it.
 
-[Interactive runtime architecture diagram](runtime-architecture.html) — how SIP signaling and media run on Kubernetes without hostNetwork, dynamic dispatcher membership, and graceful call drain, explorable in a browser.
+[Interactive runtime architecture diagram](../docs/runtime-architecture.html) — how SIP signaling and media run on Kubernetes without hostNetwork, dynamic dispatcher membership, and graceful call drain, explorable in a browser.
 
 ## Call path
 
@@ -98,7 +98,7 @@ either side.
 
 ## Decisions deferred to ADRs
 
-Tracked in `docs/adr/`, written when each choice is made, not before:
+Tracked in `dev-docs/adr/`, written when each choice is made, not before:
 
 - Media path: rtpengine bridging `net1`/`eth0` vs. routable pod IPs (Calico BGP) with no rtpengine.
 - ipvlan vs. macvlan for the voice NAD (default ipvlan L2; macvlan only if the network team confirms no per-port MAC limit).

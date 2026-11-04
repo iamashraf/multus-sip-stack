@@ -42,4 +42,4 @@ make down     # full teardown
 
 `sbc/scenarios/` has four SIPp scenarios: `uac.xml` and `uas.xml` are a matched pair (used by `make test`); `hold-reinvite.xml` and `long-call.xml` are UAC-side only and need a real in-dialog-aware peer, so they're run against Kamailio/FreeSWITCH starting Phase 2, not against `uas.xml` - see the shortcut note in `uas.xml`.
 
-Versions used here (kind, kind's node image, Multus, Whereabouts, SIPp) are pinned in `docs/versions.md`.
+Versions used here (kind, kind's node image, Multus, Whereabouts, SIPp) are pinned in `dev-docs/versions.md`.

@@ -1,5 +1,5 @@
 # Local kind lab. Same charts as every other environment - only these
-# values differ. See docs/local-lab.md for how this maps onto the podman
+# values differ. See dev-docs/local-lab.md for how this maps onto the podman
 # "voice" network.
 
 voiceNetwork:

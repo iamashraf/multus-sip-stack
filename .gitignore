@@ -4,3 +4,4 @@ local/*.hex
 local/*.al
 local/*.ul
 .archify/
+.claude/worktrees/

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installs Multus (thick plugin), Whereabouts, and the macvlan/ipvlan/static
-# CNI plugin binaries into the kind cluster. Versions pinned in docs/versions.md.
+# CNI plugin binaries into the kind cluster. Versions pinned in dev-docs/versions.md.
 set -euo pipefail
 
 MULTUS_TAG=v4.3.1
