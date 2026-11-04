@@ -11,3 +11,14 @@
 | podman-compose (local only) | 1.6.0 | brings up `local/compose.yaml` (voice network + sbc); see `docs/local-lab.md` for the `podman compose` incompatibility this avoids |
 
 Kamailio, rtpengine, and FreeSWITCH image tags are pinned in Phases 2-4 and added to this table then.
+
+## dispatcher-operator (Go module `config/dispatcher-operator`)
+
+| Component | Version | Reference |
+|---|---|---|
+| sigs.k8s.io/controller-runtime | v0.25.2 | `config/dispatcher-operator/go.mod` |
+| k8s.io/client-go | v0.37.2 | `config/dispatcher-operator/go.mod` |
+| k8s.io/api | v0.37.2 | `config/dispatcher-operator/go.mod` |
+| k8s.io/apimachinery | v0.37.2 | `config/dispatcher-operator/go.mod` |
+| setup-envtest tool (test tooling only) | v0.25.2 | installed via `go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest` |
+| envtest Kubernetes test binaries (test tooling only) | kubebuilder-tools 1.37.0-darwin-arm64 | fetched by `setup-envtest use -p path`, exported as `KUBEBUILDER_ASSETS` for `go test` |
