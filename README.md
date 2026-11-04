@@ -63,6 +63,8 @@ See [dev-docs/local-lab.md](dev-docs/local-lab.md) for the node layout, Podman-o
 - `local/check-addresses.sh <pcap>` fails if any pod-network IP leaked into SIP or SDP, checked against a capture taken from a real endpoint (not a bystander container, which only sees broadcast traffic on the bridge).
 - `local/capture.sh [iface]` takes that capture from inside the sbc container.
 
+See [dev-docs/verification.md](dev-docs/verification.md) for the full end-to-end call flow, an interactive sequence diagram, and the exact commands used to decode and confirm real audio.
+
 ## Repo layout
 
 - `charts/` — Helm charts, one per component
