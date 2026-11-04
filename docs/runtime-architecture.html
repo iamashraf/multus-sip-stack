@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="generator" content="archify 3.2.0">
   <meta name="archify-reader-contract" content="declared-wide-v1">
-  <title>SIP Voice Stack — rtpengine Media Relay (Reverse RTP Fix) Diagram</title>
+  <title>SIP Voice Stack on Kubernetes — No hostNetwork for SIP or Media Diagram</title>
   <script>
     // Resolve the theme before first paint so light-preference users don't
     // see a dark flash. The toolbar script below re-applies with UI state.
@@ -5194,17 +5194,17 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
            data-preset-badge-blueprint="BLUEPRINT / REV 01"
            data-preset-badge-editorial="EDITORIAL / FIELD NOTE">
         <div class="pulse-dot"></div>
-        <h1>SIP Voice Stack — rtpengine Media Relay (Reverse RTP Fix)</h1>
+        <h1>SIP Voice Stack on Kubernetes — No hostNetwork for SIP or Media</h1>
       </div>
     </div>
 
-    <script id="archify-source-evidence-data" type="application/json">{"schemaVersion":1,"verified":true,"repository":{"url":"https://github.com/iamashraf/multus-sip-stack","revision":"40b2a0497822c3abb27ef5f6667e608ce1e5b306","shortRevision":"40b2a04","label":"iamashraf/multus-sip-stack","href":"https://github.com/iamashraf/multus-sip-stack/tree/40b2a0497822c3abb27ef5f6667e608ce1e5b306"},"referenceCount":2,"nodes":{"rtpengine":[{"path":"charts/voice-network/templates/nad-pool.yaml","line":16,"endLine":18,"label":"NAD ipam range fix","href":"https://github.com/iamashraf/multus-sip-stack/blob/40b2a0497822c3abb27ef5f6667e608ce1e5b306/charts/voice-network/templates/nad-pool.yaml#L16-L18"},{"path":"environments/local/values.yaml","line":29,"endLine":36,"label":"pool rangeStart/rangeEnd","href":"https://github.com/iamashraf/multus-sip-stack/blob/40b2a0497822c3abb27ef5f6667e608ce1e5b306/environments/local/values.yaml#L29-L36"}]}}</script>
+    <script id="archify-source-evidence-data" type="application/json">{"schemaVersion":1,"verified":true,"repository":{"url":"https://github.com/iamashraf/multus-sip-stack","revision":"f62bdcdd26954c6517b9cb40e20a22b337687a94","shortRevision":"f62bdcd","label":"iamashraf/multus-sip-stack","href":"https://github.com/iamashraf/multus-sip-stack/tree/f62bdcdd26954c6517b9cb40e20a22b337687a94"},"referenceCount":5,"nodes":{"kamailio":[{"path":"charts/kamailio/templates/deployment.yaml","line":17,"endLine":18,"label":"static net1 IP via Multus annotation","href":"https://github.com/iamashraf/multus-sip-stack/blob/f62bdcdd26954c6517b9cb40e20a22b337687a94/charts/kamailio/templates/deployment.yaml#L17-L18"}],"rtpengine":[{"path":"charts/voice-network/templates/nad-pool.yaml","line":16,"endLine":18,"label":"NAD ipam range","href":"https://github.com/iamashraf/multus-sip-stack/blob/f62bdcdd26954c6517b9cb40e20a22b337687a94/charts/voice-network/templates/nad-pool.yaml#L16-L18"}],"freeswitch":[{"path":"charts/freeswitch/templates/deployment.yaml","line":29,"endLine":31,"label":"preStop drain hook","href":"https://github.com/iamashraf/multus-sip-stack/blob/f62bdcdd26954c6517b9cb40e20a22b337687a94/charts/freeswitch/templates/deployment.yaml#L29-L31"},{"path":"config/freeswitch/drain.sh","line":2,"endLine":6,"label":"drain mechanism","href":"https://github.com/iamashraf/multus-sip-stack/blob/f62bdcdd26954c6517b9cb40e20a22b337687a94/config/freeswitch/drain.sh#L2-L6"}],"dispatcher-sync":[{"path":"config/dispatcher-sync/sync.py","line":2,"endLine":7,"label":"reconcile semantics","href":"https://github.com/iamashraf/multus-sip-stack/blob/f62bdcdd26954c6517b9cb40e20a22b337687a94/config/dispatcher-sync/sync.py#L2-L7"}]}}</script>
     <script id="archify-i18n-data" type="application/json">{"locale":"en","messages":{"viewer.kind.frontend":"Frontend","viewer.kind.backend":"Backend","viewer.kind.database":"Database","viewer.kind.cloud":"Cloud","viewer.kind.security":"Security","viewer.kind.messagebus":"Message bus","viewer.kind.external":"External","viewer.kind.neutral":"Neutral","viewer.kind.node":"Node","viewer.kind.start":"Start","viewer.kind.active":"Active","viewer.kind.waiting":"Waiting","viewer.kind.decision":"Decision","viewer.kind.success":"Success","viewer.kind.failure":"Failure","viewer.toolbar.actions":"Diagram actions","viewer.theme.toggle.title":"Toggle theme (T)","viewer.theme.toggle":"Toggle color theme","viewer.theme.dark":"Dark","viewer.theme.light":"Light","viewer.preset.choose.title":"Choose visual style (S cycles)","viewer.preset.choose":"Choose visual style","viewer.preset.style":"Style","viewer.preset.menu":"Visual style","viewer.preset.identity":"Visual identity","viewer.preset.cycles":"to cycle","viewer.preset.classic":"Classic","viewer.preset.classic.short":"Classic","viewer.preset.classic.hint":"Stable technical default","viewer.preset.flow":"Signal Flow","viewer.preset.flow.short":"Flow","viewer.preset.flow.hint":"Motion-forward presentation","viewer.preset.blueprint":"Blueprint","viewer.preset.blueprint.hint":"Engineering review","viewer.preset.editorial":"Editorial","viewer.preset.editorial.hint":"Publication and launch notes","viewer.preset.badge.signalFlow":"SIGNAL FLOW","viewer.preset.badge.blueprint":"BLUEPRINT / REV 01","viewer.preset.badge.editorial":"EDITORIAL / FIELD NOTE","viewer.preset.badge.editorialPlate":"ARCHIFY / PLATE 04","viewer.preset.current":"Visual style: {style}. Choose visual style","viewer.motion.live":"Live","viewer.motion.still":"Still","viewer.motion.pause":"Pause motion","viewer.motion.resume":"Resume motion","viewer.motion.reduced":"Motion paused by reduced-motion preference","viewer.motion.hidden":"Motion paused while this page is hidden","viewer.motion.yielding":"Pause motion; currently yielding to {owner}","viewer.motion.yielding.title":"Live preview enabled · yielding to {owner}","viewer.owner.route":"Route Probe","viewer.owner.lens":"Semantic Lens","viewer.owner.relationship":"Relationship Preview","viewer.owner.intent":"Intent Trace","viewer.owner.focus":"semantic focus","viewer.owner.legend":"legend preview","viewer.owner.reader":"reader interaction","viewer.present.enter":"Enter presentation stage","viewer.present.enter.title":"Presentation stage (F)","viewer.present.exit":"Exit presentation stage","viewer.present.exit.title":"Exit presentation stage (F or Escape)","viewer.present.present":"Present","viewer.present.exit.label":"Exit","viewer.export.button":"Export","viewer.export.button.title":"Export diagram (E)","viewer.export.diagram":"Export diagram","viewer.export.menu":"Export","viewer.export.subtitle":"Portable, clean outputs","viewer.export.share":"Share","viewer.export.shareCard":"Share Card","viewer.export.routeShareCard":"Route Share Card","viewer.export.reachShareCard":"Reach Share Card","viewer.export.copyDiagram":"Copy diagram","viewer.export.clipboardPng":"PNG to clipboard","viewer.export.raster":"Raster images","viewer.export.image":"Image","viewer.export.lossless":"Lossless image","viewer.export.compact":"Compact image","viewer.export.modern":"Modern image","viewer.export.vectorMotion":"Vector and motion","viewer.export.vectorMotion.heading":"Vector \u0026 motion","viewer.export.editable":"Editable vector","viewer.export.svg.auto":"SVG · Auto","viewer.export.svg.auto.hint":"Matches host theme","viewer.export.svg.light":"SVG · Light","viewer.export.svg.light.hint":"Always light","viewer.export.svg.dark":"SVG · Dark","viewer.export.svg.dark.hint":"Always dark","viewer.export.motion6s":"6s motion","viewer.export.unsupported":"Not supported by this browser","viewer.export.clipboardUnsupported":"Clipboard image write not supported by this browser","viewer.export.clipboardUnsupported.short":"Clipboard image write not supported in this browser.","viewer.export.motionUnavailable":"Motion capture unavailable in this browser","viewer.export.webmUnavailable":"WebM unavailable in this browser","viewer.export.failed":"Export failed: {message}","viewer.export.unknownVariant":"Unknown Share Card variant: {variant}","viewer.export.routeRequired":"Trace a route before exporting a Route Share Card","viewer.export.reachRequired":"Trace authored reach before exporting a Reach Share Card","viewer.export.unknown":"unknown","viewer.export.routeFailed":"Route Share Card export failed: {message}","viewer.export.reachFailed":"Reach Share Card export failed: {message}","viewer.export.copyFailed":"Copy failed: {message}","viewer.export.copiedPng":"Copied PNG to clipboard","viewer.export.downloadedRoute":"Downloaded Route Share Card","viewer.export.downloadedReach":"Downloaded Reach Share Card","viewer.export.downloadedWebm":"Downloaded WebM","viewer.export.recording":"Recording 6 seconds of motion…","viewer.export.card.routeSummary.one":"Path: {source} → {target} · {count} step","viewer.export.card.routeSummary.other":"Path: {source} → {target} · {count} steps","viewer.export.card.reachSummary":"Authored {direction} from {origin} · {nodes} · {links} · max {hops}","viewer.export.card.node.one":"{count} node","viewer.export.card.node.other":"{count} nodes","viewer.export.card.link.one":"{count} link","viewer.export.card.link.other":"{count} links","viewer.export.card.hop.one":"{count} hop","viewer.export.card.hop.other":"{count} hops","viewer.export.card.routeBadge":"ARCHIFY · ROUTE · {hops}","viewer.export.card.reachBadge":"ARCHIFY · {direction} REACH","viewer.export.direction.upstream":"Upstream","viewer.export.direction.downstream":"Downstream","viewer.export.error.canvasUnavailable":"Canvas unavailable for {label}","viewer.export.error.contextUnavailable":"2D canvas context unavailable for {label}","viewer.export.error.toBlobUnavailable":"canvas.toBlob unavailable for {label}","viewer.export.error.toBlobNull":"canvas.toBlob returned no data for {label}","viewer.export.error.variantsCombined":"Share Card variants cannot be combined","viewer.export.error.viewerState":"Share Card export could not remove temporary viewer state","viewer.export.error.routeState":"Route Card export could not preserve the resolved route safely","viewer.export.error.reachState":"Reach Card export could not preserve authored reach safely","viewer.export.error.webmRequirements":"WebM motion export requires a trace animation and browser MediaRecorder support","viewer.export.error.mediaRecorder":"MediaRecorder failed","viewer.export.error.emptyWebm":"MediaRecorder produced an empty WebM","viewer.export.error.webmBackground":"SVG background could not be loaded for WebM export","viewer.guide.title":"Explore this system","viewer.focus.selectedNodes":"{count} selected nodes","viewer.guide.eyebrow":"Diagram guide","viewer.guide.close":"Close diagram guide","viewer.guide.inspecting":"Inspecting compiled semantics","viewer.guide.actions":"Diagram exploration actions","viewer.guide.find":"Find any node","viewer.guide.find.hint":"Search labels, responsibilities, kinds, and stable IDs.","viewer.guide.route":"Trace a route","viewer.guide.route.aria":"Trace a directed route","viewer.guide.route.hint":"Ask how two semantic nodes connect in authored direction.","viewer.guide.map":"See the whole system","viewer.guide.map.hint":"Open Semantic Radar with a live viewport and stable nodes.","viewer.guide.lens":"Compare semantic kinds","viewer.guide.lens.hint":"Count roles, reveal their traffic, and compare direct authored links.","viewer.guide.present":"Enter Presentation Stage","viewer.guide.present.hint":"Give the live diagram the viewport without changing export.","viewer.guide.shortcuts":"Additional keyboard shortcuts","viewer.guide.shortcut.export":"Export","viewer.guide.shortcut.theme":"Theme","viewer.guide.shortcut.style":"Style","viewer.guide.shortcut.reset":"Reset","viewer.guide.shortcut.zoomIn":"Zoom in","viewer.guide.shortcut.zoomOut":"Zoom out","viewer.guide.shortcut.close":"Close","viewer.guide.credit":"Find Archify useful? A star on GitHub helps","viewer.guide.star":"Star","viewer.guide.facts":"{nodes} · {relationships}","viewer.guide.fact.node.one":"{count} semantic node","viewer.guide.fact.node.other":"{count} semantic nodes","viewer.guide.fact.relationship.one":"{count} relationship","viewer.guide.fact.relationship.other":"{count} relationships","viewer.guide.open":"Open diagram guide","viewer.finder.title":"Find a node","viewer.finder.close":"Close node finder","viewer.finder.placeholder":"Search labels or IDs","viewer.finder.search":"Search diagram nodes","viewer.finder.results":"Diagram nodes","viewer.finder.empty":"No matching nodes","viewer.finder.result.focus":"Focus {label}","viewer.finder.result.routeStart":"Choose {label} as route start","viewer.finder.result.routeTarget":"Choose {label} as route destination, {links}","viewer.finder.status.empty":"No matching nodes","viewer.finder.status.count.one":"{count} matching node","viewer.finder.status.count.other":"{count} matching nodes","viewer.finder.noun.nodes":"nodes","viewer.finder.link.one":"{count} link","viewer.finder.link.other":"{count} links","viewer.finder.result.focus.one":"Focus {label}, {count} related connection","viewer.finder.result.focus.other":"Focus {label}, {count} related connections","viewer.finder.status.filtered":"{visible} of {available} {noun}","viewer.finder.status.all":"{available} {noun}","viewer.passport.eyebrow":"Semantic passport","viewer.passport.metadata":"Node metadata","viewer.passport.evidence":"Verified source evidence","viewer.passport.verified":"Verified source","viewer.passport.verificationScope":"Verified against local Git at the pinned revision. Remote access has not been checked.","viewer.passport.reach":"Authored reach","viewer.passport.reach.trace":"Trace authored reachability","viewer.passport.upstream":"Upstream","viewer.passport.downstream":"Downstream","viewer.passport.upstream.trace":"Trace upstream authored reachability","viewer.passport.downstream.trace":"Trace downstream authored reachability","viewer.passport.close":"Close semantic passport","viewer.passport.move":"Move semantic passport. Drag, use arrow keys, or press Home to reset.","viewer.passport.copy":"Copy link","viewer.passport.copy.focus":"Copy link to focused node","viewer.passport.relations":"Relations","viewer.passport.relations.show":"Show connected relationships","viewer.passport.relations.hide":"Hide connected relationships","viewer.passport.relations.list":"Connected relationships","viewer.passport.copyRelation":"Copy relation","viewer.passport.copyNode":"Copy node","viewer.passport.copyPinned":"Copy link to pinned relationship","viewer.passport.copySource":"Copy link to source node","viewer.passport.copy.focused.success":"Focused node link copied","viewer.passport.copy.pinned.success":"Pinned relationship link copied","viewer.passport.copy.focused.failed":"Could not copy focused node link","viewer.passport.copy.pinned.failed":"Could not copy pinned relationship link","viewer.passport.relationship.none":"No connected relationships","viewer.passport.relationship.count.one":"{count} relation","viewer.passport.relationship.count.other":"{count} relations","viewer.passport.relationship.show.one":"Show {count} connected relationship","viewer.passport.relationship.show.other":"Show {count} connected relationships","viewer.passport.relationship.summary":"{out} outgoing · {in} incoming{loops}","viewer.passport.relationship.loops":" · {count} loop","viewer.passport.relationship.explorer":"Direct relationship explorer","viewer.passport.relationship.help":"Use arrow keys to explore relationships. Press Enter or Space to pin details; Escape clears.","viewer.passport.relationship.loopsBack":"loops back","viewer.passport.relationship.connectsTo":"connects to","viewer.passport.relationship.connectsFrom":"connects from","viewer.passport.relationship.pinned":"Pinned relationship · {from} → {to} · {label}","viewer.passport.relationship.inspect":"Inspect relationship {index} of {total}: {from} to {to}, {label}. Press Enter for details.","viewer.passport.relationship.group.out":"Outgoing","viewer.passport.relationship.group.in":"Incoming","viewer.passport.relationship.group.loop":"Self loops","viewer.passport.relationship.row":"{group}: {relationship}, {neighbor}","viewer.passport.relationship.direction.out":"OUT →","viewer.passport.relationship.direction.in":"← IN","viewer.passport.relationship.direction.loop":"LOOP","viewer.passport.sourceCount.one":"{count} verified source reference","viewer.passport.sourceCount.other":"{count} verified source references","viewer.passport.repository.open":"Open verified repository revision {revision}","viewer.passport.source.open":"Open verified source {path} at revision {revision}","viewer.passport.source.openLink":"Open ↗","viewer.passport.reach.upstream.one":"Trace {count} upstream authored node","viewer.passport.reach.upstream.other":"Trace {count} upstream authored nodes","viewer.passport.reach.downstream.one":"Trace {count} downstream authored node","viewer.passport.reach.downstream.other":"Trace {count} downstream authored nodes","viewer.passport.reach.noUpstream":"No upstream authored nodes","viewer.passport.reach.noDownstream":"No downstream authored nodes","viewer.passport.reach.status":"{direction} · {nodes} nodes · {links} links · max {hops} hops","viewer.route.eyebrow":"Path","viewer.route.start":"Click where the path starts","viewer.route.start.find":"Find start","viewer.route.start.find.aria":"Find a route start","viewer.route.copy":"Copy link","viewer.route.copy.aria":"Copy link to traced route","viewer.route.clear":"Clear","viewer.route.clear.aria":"Clear route probe","viewer.route.traced":"Path","viewer.route.pickTwo":"Click two nodes on the diagram","viewer.route.pickOne":"Click a node on the diagram","viewer.route.controls":"Route journey controls","viewer.route.previous":"Previous route position","viewer.route.play":"Play route journey","viewer.route.pause":"Pause route journey","viewer.route.replay":"Replay route journey","viewer.route.next":"Next route position","viewer.route.journey":"Journey","viewer.route.pause.label":"Pause","viewer.route.replay.label":"Replay","viewer.route.overview":"Overview","viewer.route.overview.aria":"Show complete route overview","viewer.route.instructions":"Click a start, then an end. Paths follow the arrows.","viewer.route.destination":"Where does the path from {label} end?","viewer.route.destination.find":"Find target","viewer.route.destination.find.aria":"Find a reachable route destination","viewer.route.differentDestination":"Choose a different destination","viewer.route.distinct":"Pick two different nodes.","viewer.route.unreachable":"Cannot reach {label} from here","viewer.route.unreachable.detail":"{target} cannot be reached from {source} along the arrows. Pick a highlighted node.","viewer.route.start.instructions":"Next, pick the end. Only nodes you can reach will light up.","viewer.route.copy.success":"Traced route link copied","viewer.route.copy.failed":"Could not copy traced route link","viewer.route.position":"Route position {index} of {total}: {label}","viewer.route.step":"Step {index} of {total} · {phase} · {label}","viewer.route.motionRequired":"Automatic journey requires Live motion","viewer.route.trigger.clear":"Clear traced route","viewer.route.overview.status":"{nodes} · {hops} · shortest path","viewer.route.overview.node.one":"{count} node","viewer.route.overview.node.other":"{count} nodes","viewer.route.overview.hop.one":"{count} step","viewer.route.overview.hop.other":"{count} steps","viewer.route.phase.playing":"Playing","viewer.route.phase.complete":"Complete","viewer.route.phase.inspecting":"Inspecting","viewer.route.destination.count.one":"{count} reachable node is highlighted. Click it.","viewer.route.destination.count.other":"{count} reachable nodes are highlighted. Click one.","viewer.route.noOutgoing":"No arrows lead out of this node. Clear it and pick another start.","viewer.route.result.title":"{source} to {target}","viewer.route.finder.source.title":"Choose route start","viewer.route.finder.source.placeholder":"Search route sources","viewer.route.finder.source.empty":"No matching route sources","viewer.route.finder.source.results":"Nodes that can start a route","viewer.route.finder.source.noun":"route sources","viewer.route.finder.source.badge":"start","viewer.route.finder.target.title":"Destination from {label}","viewer.route.finder.target.placeholder":"Search reachable destinations","viewer.route.finder.target.empty":"No matching reachable destinations","viewer.route.finder.target.results":"Reachable route destinations","viewer.route.finder.target.noun":"reachable destinations","viewer.route.hop.one":"{count} hop","viewer.route.hop.other":"{count} hops","viewer.lens.eyebrow":"Semantic lens","viewer.lens.title":"Compare system roles","viewer.lens.close":"Close semantic lens","viewer.lens.instruction":"Choose up to two semantic kinds. One reveals its real traffic; two compare only direct authored relationships.","viewer.lens.kinds":"Semantic kinds","viewer.lens.choose":"Choose a kind to inspect its nodes and touching relationships.","viewer.lens.copy":"Copy link to semantic lens","viewer.lens.clear":"Clear semantic lens","viewer.lens.open":"Open semantic lens","viewer.lens.openActive":"Open active semantic lens","viewer.lens.legend":"Semantic legend","viewer.lens.legend.inspect.one":"Inspect {label}, {count} node","viewer.lens.legend.inspect.other":"Inspect {label}, {count} nodes","viewer.lens.kind.count.one":"{label}, {count} node","viewer.lens.kind.count.other":"{label}, {count} nodes","viewer.lens.compare.one":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationship","viewer.lens.compare.other":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationships","viewer.lens.single":"{nodes} · {relationships} · connected peers remain visible","viewer.lens.node.one":"{count} {label} node","viewer.lens.node.other":"{count} {label} nodes","viewer.lens.relationship.one":"{count} touching relationship","viewer.lens.relationship.other":"{count} touching relationships","viewer.radar.title":"Semantic radar","viewer.radar.building":"Building overview","viewer.radar.openFull":"Open full semantic radar","viewer.radar.open":"Open radar","viewer.radar.close":"Close semantic radar","viewer.radar.surface":"Diagram overview. Click a node to focus it, or use arrow keys to pan.","viewer.radar.click":"Click node","viewer.radar.drag":"Drag to pan","viewer.radar.space":"Semantic radar needs more MAP space.","viewer.radar.nodes":"Semantic diagram radar nodes","viewer.radar.focus":"Focus {label} from Semantic Radar","viewer.radar.status":"{count} nodes · {viewport}","viewer.radar.fullMap":"{count} nodes · full map","viewer.radar.compacted":"Radar compacted to avoid covering the Semantic Passport or MAP controls.","viewer.radar.cancelWaiting":"Cancel semantic radar waiting for more MAP space","viewer.radar.needsSpace":"Semantic radar needs more visible MAP space","viewer.radar.viewport.full":"full map","viewer.radar.viewport.width":"{percent}% width","viewer.radar.viewport.scale":"{percent}% viewport","viewer.nav.controls":"Diagram view controls","viewer.nav.route":"Trace a directed route","viewer.nav.route.title":"Trace route (R)","viewer.nav.route.short":"ROUTE","viewer.nav.radar":"Open semantic radar","viewer.nav.radar.title":"Semantic radar (M)","viewer.nav.radar.short":"MAP","viewer.nav.lens":"Open semantic lens","viewer.nav.lens.title":"Semantic lens (L)","viewer.nav.lens.short":"LENS","viewer.nav.find":"Find a node","viewer.nav.find.title":"Find a node (/)","viewer.outline.title":"Node index","viewer.rail.show":"Notes \u0026 index","viewer.rail.controls":"Side panel","viewer.rail.collapse":"Collapse side panel","viewer.rail.bottom":"Move panel below the diagram","viewer.rail.right":"Move panel beside the diagram","viewer.nav.guide":"Open diagram guide","viewer.nav.guide.title":"Diagram guide (?)","viewer.nav.zoomOut":"Zoom out","viewer.nav.zoomOut.title":"Zoom out (-)","viewer.nav.reset":"Reset diagram view","viewer.nav.reset.title":"Reset view (0)","viewer.nav.read":"READ","viewer.nav.zoomIn":"Zoom in","viewer.nav.zoomIn.title":"Zoom in (+)","viewer.nav.camera":"{hint}. Reset diagram view","viewer.nav.camera.title":"{semantic}{hint} · reset view (0)","viewer.nav.camera.semantic":"Semantic camera active · ","viewer.nav.level.map":"MAP","viewer.nav.level.read":"READ","viewer.nav.level.full":"FULL","viewer.nav.level.auto":"AUTO","viewer.nav.detail.map":"Zoom in to reveal relationship labels and node context","viewer.nav.detail.read":"Zoom in again to reveal tags and annotations","viewer.nav.detail.full":"Full diagram detail","viewer.intent.summary":"{label}. {out} outgoing, {in} incoming{loops}. {total} connections. Press Enter for details.","viewer.intent.loops":", {count} self loop","viewer.common.copied":"Copied","viewer.common.copyFailed":"Copy failed","viewer.common.copyLink":"Copy link","viewer.common.clear":"Clear","viewer.common.close":"Close"}}</script>
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 890 438" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="" data-reader-fit="intrinsic-height" data-reader-min-text="7.5" data-reader-primary-text="14">
-        <title id="archify-diagram-title">SIP Voice Stack — rtpengine Media Relay (Reverse RTP Fix)</title>
+      <svg viewBox="0 0 1090 438" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="" data-reader-fit="intrinsic-height" data-reader-min-text="7.5" data-reader-primary-text="14">
+        <title id="archify-diagram-title">SIP Voice Stack on Kubernetes — No hostNetwork for SIP or Media</title>
         <desc id="archify-diagram-description">An architecture diagram generated by Archify.</desc>
         <!-- Definitions -->
         <defs>
@@ -5250,35 +5250,47 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Boundaries (behind everything) -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Voice VLAN (192.168.50.0/24)" x="10" y="20" width="470" height="230" rx="12" class="c-region" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan" x="10" y="100" width="470" height="150" rx="12" class="c-region" stroke-width="1"/>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="1" data-composition-frame-label="Pod network" x="630" y="140" width="220" height="110" rx="12" class="c-region" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="1" data-composition-frame-label="Pod network · ordinary unprivileged pods" x="630" y="0" width="220" height="260" rx="12" class="c-region" stroke-width="1"/>
 
         <!-- Connection paths (before components for correct z-order) -->
         <g data-graph-role="automatic-crossover" style="--step:0">
-          <path data-graph-role="automatic-crossover-underlay" d="M 160 191.95 L 176 191.95 Q 184 191.95 184 183.95 L 184 88 Q 184 80 192 80 L 280 80" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="sbc" data-edge-to="kamailio" data-edge-label="SIP (INVITE / BYE / OPTIONS)" data-edge-key="0" data-edge-id="sip-invite" data-composition-points="160,191.95;184,191.95;184,80;280,80" data-composition-crossover="halo" data-composition-independent="true" d="M 160 191.95 L 176 191.95 Q 184 191.95 184 183.95 L 184 88 Q 184 80 192 80 L 280 80" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 100 170 L 100 165 Q 100 160 105 160 L 280 160" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="sbc" data-edge-to="kamailio" data-edge-label="SIP (INVITE / BYE / OPTIONS)" data-edge-key="0" data-edge-id="sip-invite" data-composition-points="100,170;100,160;280,160" data-composition-crossover="halo" data-composition-independent="true" d="M 100 170 L 100 165 Q 100 160 105 160 L 280 160" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:1">
-          <path data-graph-role="automatic-crossover-underlay" d="M 434 110 L 434 178 Q 434 186 442 186 L 660 186" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="kamailio" data-edge-to="freeswitch" data-edge-label="SIP dispatch (dispatcher.list)" data-edge-key="1" data-edge-id="sip-dispatch" data-composition-points="434,110;434,186;660,186" data-composition-crossover="halo" data-composition-independent="true" d="M 434 110 L 434 178 Q 434 186 442 186 L 660 186" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 434 190 L 434 202 Q 434 210 442 210 L 660 210" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="kamailio" data-edge-to="freeswitch" data-edge-label="SIP dispatch (dispatcher.list)" data-edge-key="1" data-edge-id="sip-dispatch" data-composition-points="434,190;434,210;660,210" data-composition-crossover="halo" data-composition-independent="true" d="M 434 190 L 434 202 Q 434 210 442 210 L 660 210" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:2">
-          <path data-graph-role="automatic-crossover-underlay" d="M 365 110 L 365 311.95 Q 365 319.95 373 319.95 L 400 319.95" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="kamailio" data-edge-to="rtpengine" data-edge-label="control: offer/answer (JSON-RPC)" data-edge-key="2" data-edge-id="control-offer" data-composition-points="365,110;365,319.95;400,319.95" data-composition-crossover="halo" data-composition-independent="true" d="M 365 110 L 365 311.95 Q 365 319.95 373 319.95 L 400 319.95" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 365 190 L 365 237 Q 365 245 373 245 L 487 245 Q 495 245 495 253 L 495 300" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="kamailio" data-edge-to="rtpengine" data-edge-label="control: offer/answer (JSON-RPC)" data-edge-key="2" data-edge-id="control-offer" data-composition-points="365,190;365,245;495,245;495,300" data-composition-crossover="halo" data-composition-independent="true" d="M 365 190 L 365 237 Q 365 245 373 245 L 487 245 Q 495 245 495 253 L 495 300" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:3">
-          <path data-graph-role="automatic-crossover-underlay" d="M 144 230 L 144 346 Q 144 354 152 354 L 400 354" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="sbc" data-edge-to="rtpengine" data-edge-label="RTP via net1 — forward always worked, reverse fixed" data-edge-key="3" data-edge-id="rtp-media" data-composition-points="144,230;144,354;400,354" data-composition-crossover="halo" data-composition-independent="true" d="M 144 230 L 144 346 Q 144 354 152 354 L 400 354" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 144 230 L 144 308 Q 144 316 152 316 L 400 316" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="sbc" data-edge-to="rtpengine" data-edge-label="RTP via net1" data-edge-key="3" data-edge-id="rtp-media" data-composition-points="144,230;144,316;400,316" data-composition-crossover="halo" data-composition-independent="true" d="M 144 230 L 144 308 Q 144 316 152 316 L 400 316" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:4">
-          <path data-graph-role="automatic-crossover-underlay" d="M 590 316 L 668 316 Q 676 316 676 308 L 676 230" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="rtpengine" data-edge-to="freeswitch" data-edge-label="RTP via eth0 (both directions)" data-edge-key="4" data-edge-id="rtp-fsw" data-composition-points="590,316;676,316;676,230" data-composition-crossover="halo" data-composition-independent="true" d="M 590 316 L 668 316 Q 676 316 676 308 L 676 230" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 590 335 L 732 335 Q 740 335 740 327 L 740 240" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="rtpengine" data-edge-to="freeswitch" data-edge-label="RTP via eth0" data-edge-key="4" data-edge-id="rtp-fsw" data-composition-points="590,335;740,335;740,240" data-composition-crossover="halo" data-composition-independent="true" d="M 590 335 L 732 335 Q 740 335 740 327 L 740 240" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:5">
+          <path data-graph-role="automatic-crossover-underlay" d="M 660 196 L 644 196 Q 636 196 636 188 L 636 168 Q 636 160 628 160 L 450 160" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="freeswitch" data-edge-to="kamailio" data-edge-label="drain: dispatcher.set_state (preStop)" data-edge-key="5" data-edge-id="drain-signal" data-composition-points="660,196;636,196;636,160;450,160" data-composition-crossover="halo" data-composition-independent="true" d="M 660 196 L 644 196 Q 636 196 636 188 L 636 168 Q 636 160 628 160 L 450 160" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:6">
+          <path data-graph-role="automatic-crossover-underlay" d="M 820 60 L 900 60" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="dispatcher-sync" data-edge-to="k8s-api" data-edge-label="watch FreeSWITCH EndpointSlice" data-edge-key="6" data-edge-id="watch-eps" data-composition-points="820,60;900,60" data-composition-crossover="halo" data-composition-independent="true" d="M 820 60 L 900 60" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:7">
+          <path data-graph-role="automatic-crossover-underlay" d="M 676 90 L 676 138 Q 676 146 668 146 L 450 146" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="dispatcher-sync" data-edge-to="kamailio" data-edge-label="reconcile dispatcher.list (add/remove)" data-edge-key="7" data-edge-id="reconcile" data-composition-points="676,90;676,146;450,146" data-composition-crossover="halo" data-composition-independent="true" d="M 676 90 L 676 138 Q 676 146 668 146 L 450 146" class="a-default" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
 
         <!-- Components -->
-        <g id="node-sbc" data-node-id="sbc" data-node-label="SBC" tabindex="0" role="button" aria-label="Focus SBC, 192.168.50.5 · voice VLAN, Voice VLAN (192.168.50.0/24)" aria-pressed="false" data-node-kind="external" data-node-sublabel="192.168.50.5 · voice VLAN" data-node-context="Voice VLAN (192.168.50.0/24)">
-          <title>SBC · 192.168.50.5 · voice VLAN · Voice VLAN (192.168.50.0/24)</title>
+        <g id="node-sbc" data-node-id="sbc" data-node-label="SBC" tabindex="0" role="button" aria-label="Focus SBC, 192.168.50.5 · voice VLAN, Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan" aria-pressed="false" data-node-kind="external" data-node-sublabel="192.168.50.5 · voice VLAN" data-node-context="Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan">
+          <title>SBC · 192.168.50.5 · voice VLAN · Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan</title>
           <rect x="40" y="170" width="120" height="60" rx="8" class="c-mask"/>
           <rect x="40" y="170" width="120" height="60" rx="8" class="c-external" data-animate="node" style="--step:0" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(46 176) scale(0.6875)">
@@ -5289,70 +5301,104 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="context" x="100" y="214" class="t-muted" font-size="7.4" text-anchor="middle">192.168.50.5 · voice VLAN</text>
         </g>
 
-        <g id="node-kamailio" data-node-id="kamailio" data-node-label="Kamailio A/B" tabindex="0" role="button" aria-label="Focus Kamailio A/B, SIP dispatcher · net1 .20/.21, Voice VLAN (192.168.50.0/24)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="SIP dispatcher · net1 .20/.21" data-node-context="Voice VLAN (192.168.50.0/24)">
-          <title>Kamailio A/B · SIP dispatcher · net1 .20/.21 · Voice VLAN (192.168.50.0/24)</title>
-          <rect x="280" y="50" width="170" height="60" rx="8" class="c-mask"/>
-          <rect x="280" y="50" width="170" height="60" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(286 56) scale(0.6875)">
+        <g id="node-kamailio" data-node-id="kamailio" data-node-label="Kamailio A/B" tabindex="0" role="button" aria-label="Focus Kamailio A/B, SIP dispatcher · static net1 IP, Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan" aria-pressed="false" data-node-kind="backend" data-node-sublabel="SIP dispatcher · static net1 IP" data-node-context="Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan">
+          <title>Kamailio A/B · SIP dispatcher · static net1 IP · Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan</title>
+          <rect x="280" y="130" width="170" height="60" rx="8" class="c-mask"/>
+          <rect x="280" y="130" width="170" height="60" rx="8" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(286 136) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="365" y="78" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Kamailio A/B</text>
-        <text data-detail="context" x="365" y="94" class="t-muted" font-size="9" text-anchor="middle">SIP dispatcher · net1 .20/.21</text>
+          <text data-node-label="" data-detail-anchor="" x="365" y="158" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Kamailio A/B</text>
+        <text data-detail="context" x="365" y="174" class="t-muted" font-size="8.7" text-anchor="middle">SIP dispatcher · static net1 IP</text>
         </g>
 
-        <g id="node-rtpengine" data-node-id="rtpengine" data-node-label="rtpengine" tabindex="0" role="button" aria-label="Focus rtpengine, net1 192.168.50.128/24 ⇄ eth0 10.244.1.19, Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="net1 192.168.50.128/24 ⇄ eth0 10.244.1.19" data-node-context="Architecture component">
-          <title>rtpengine · net1 192.168.50.128/24 ⇄ eth0 10.244.1.19 · Architecture component</title>
+        <g id="node-rtpengine" data-node-id="rtpengine" data-node-label="rtpengine" tabindex="0" role="button" aria-label="Focus rtpengine, bridges net1 (voice VLAN) ⇄ eth0 (pod network), Architecture component" aria-pressed="false" data-node-kind="backend" data-node-sublabel="bridges net1 (voice VLAN) ⇄ eth0 (pod network)" data-node-context="Architecture component">
+          <title>rtpengine · bridges net1 (voice VLAN) ⇄ eth0 (pod network) · Architecture component</title>
           <rect x="400" y="300" width="190" height="70" rx="8" class="c-mask"/>
           <rect x="400" y="300" width="190" height="70" rx="8" class="c-backend" data-animate="node" style="--step:3" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(406 306) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="495" y="333" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">rtpengine</text>
-        <text data-detail="context" x="495" y="349" class="t-muted" font-size="7.3" text-anchor="middle">net1 192.168.50.128/24 ⇄ eth0 10.244.1.19</text>
+        <text data-detail="context" x="495" y="349" class="t-muted" font-size="6.5" text-anchor="middle">bridges net1 (voice VLAN) ⇄ eth0 (pod network)</text>
         </g>
 
-        <g id="node-freeswitch" data-node-id="freeswitch" data-node-label="FreeSWITCH pool" tabindex="0" role="button" aria-label="Focus FreeSWITCH pool, 2 pods · eth0 only, pod network, Pod network" aria-pressed="false" data-node-kind="backend" data-node-sublabel="2 pods · eth0 only, pod network" data-node-context="Pod network">
-          <title>FreeSWITCH pool · 2 pods · eth0 only, pod network · Pod network</title>
-          <rect x="660" y="170" width="160" height="60" rx="8" class="c-mask"/>
-          <rect x="660" y="170" width="160" height="60" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(666 176) scale(0.6875)">
+        <g id="node-freeswitch" data-node-id="freeswitch" data-node-label="FreeSWITCH pool" tabindex="0" role="button" aria-label="Focus FreeSWITCH pool, ordinary pods · eth0 only · graceful drain, Pod network · ordinary unprivileged pods" aria-pressed="false" data-node-kind="backend" data-node-sublabel="ordinary pods · eth0 only · graceful drain" data-node-context="Pod network · ordinary unprivileged pods">
+          <title>FreeSWITCH pool · ordinary pods · eth0 only · graceful drain · Pod network · ordinary unprivileged pods</title>
+          <rect x="660" y="180" width="160" height="60" rx="8" class="c-mask"/>
+          <rect x="660" y="180" width="160" height="60" rx="8" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(666 186) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="740" y="198" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FreeSWITCH pool</text>
-        <text data-detail="context" x="740" y="214" class="t-muted" font-size="8.1" text-anchor="middle">2 pods · eth0 only, pod network</text>
+          <text data-node-label="" data-detail-anchor="" x="740" y="208" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">FreeSWITCH pool</text>
+        <text data-detail="context" x="740" y="224" class="t-muted" font-size="6" text-anchor="middle">ordinary pods · eth0 only · graceful drain</text>
+        </g>
+
+        <g id="node-dispatcher-sync" data-node-id="dispatcher-sync" data-node-label="dispatcher-sync" tabindex="0" role="button" aria-label="Focus dispatcher-sync, EndpointSlice → live dispatcher.list, Pod network · ordinary unprivileged pods" aria-pressed="false" data-node-kind="backend" data-node-sublabel="EndpointSlice → live dispatcher.list" data-node-context="Pod network · ordinary unprivileged pods">
+          <title>dispatcher-sync · EndpointSlice → live dispatcher.list · Pod network · ordinary unprivileged pods</title>
+          <rect x="660" y="30" width="160" height="60" rx="8" class="c-mask"/>
+          <rect x="660" y="30" width="160" height="60" rx="8" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(666 36) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="740" y="58" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">dispatcher-sync</text>
+        <text data-detail="context" x="740" y="74" class="t-muted" font-size="7" text-anchor="middle">EndpointSlice → live dispatcher.list</text>
+        </g>
+
+        <g id="node-k8s-api" data-node-id="k8s-api" data-node-label="Kubernetes API" tabindex="0" role="button" aria-label="Focus Kubernetes API, FreeSWITCH EndpointSlice, Architecture component" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="FreeSWITCH EndpointSlice" data-node-context="Architecture component">
+          <title>Kubernetes API · FreeSWITCH EndpointSlice · Architecture component</title>
+          <rect x="900" y="20" width="150" height="60" rx="8" class="c-mask"/>
+          <rect x="900" y="20" width="150" height="60" rx="8" class="c-cloud" data-animate="node" style="--step:7" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(906 26) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="975" y="48" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Kubernetes API</text>
+        <text data-detail="context" x="975" y="64" class="t-muted" font-size="9" text-anchor="middle">FreeSWITCH EndpointSlice</text>
         </g>
 
         <!-- Connection labels -->
         <g data-detail="context" data-edge-from="sbc" data-edge-to="kamailio" data-edge-label="SIP (INVITE / BYE / OPTIONS)" data-edge-key="0" data-edge-id="sip-invite">
-          <rect x="111.8" y="73.975" width="144.4" height="14" rx="3" class="c-mask"/>
-          <text x="184" y="83.975" class="t-edge-default" font-size="8" text-anchor="middle">SIP (INVITE / BYE / OPTIONS)</text>
+          <rect x="117.8" y="140" width="144.4" height="14" rx="3" class="c-mask"/>
+          <text x="190" y="150" class="t-edge-default" font-size="8" text-anchor="middle">SIP (INVITE / BYE / OPTIONS)</text>
         </g>
         <g data-detail="context" data-edge-from="kamailio" data-edge-to="freeswitch" data-edge-label="SIP dispatch (dispatcher.list)" data-edge-key="1" data-edge-id="sip-dispatch">
-          <rect x="470" y="166" width="154" height="14" rx="3" class="c-mask"/>
-          <text x="547" y="176" class="t-edge-default" font-size="8" text-anchor="middle">SIP dispatch (dispatcher.list)</text>
+          <rect x="470" y="190" width="154" height="14" rx="3" class="c-mask"/>
+          <text x="547" y="200" class="t-edge-default" font-size="8" text-anchor="middle">SIP dispatch (dispatcher.list)</text>
         </g>
         <g data-detail="context" data-edge-from="kamailio" data-edge-to="rtpengine" data-edge-label="control: offer/answer (JSON-RPC)" data-edge-key="2" data-edge-id="control-offer">
-          <rect x="301.7" y="281.95" width="163.6" height="14" rx="3" class="c-mask"/>
-          <text x="383.5" y="291.95" class="t-edge-default" font-size="8" text-anchor="middle">control: offer/answer (JSON-RPC)</text>
+          <rect x="348.2" y="249" width="163.6" height="14" rx="3" class="c-mask"/>
+          <text x="430" y="259" class="t-edge-default" font-size="8" text-anchor="middle">control: offer/answer (JSON-RPC)</text>
         </g>
-        <g data-detail="context" data-edge-from="sbc" data-edge-to="rtpengine" data-edge-label="RTP via net1 — forward always worked, reverse fixed" data-edge-key="3" data-edge-id="rtp-media">
-          <rect x="144.60000000000002" y="334" width="254.79999999999998" height="14" rx="3" class="c-mask"/>
-          <text x="272" y="344" class="t-edge-emphasis" font-size="8" text-anchor="middle">RTP via net1 — forward always worked, reverse fixed</text>
+        <g data-detail="context" data-edge-from="sbc" data-edge-to="rtpengine" data-edge-label="RTP via net1" data-edge-key="3" data-edge-id="rtp-media">
+          <rect x="238.2" y="296" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="272" y="306" class="t-edge-emphasis" font-size="8" text-anchor="middle">RTP via net1</text>
         </g>
-        <g data-detail="context" data-edge-from="rtpengine" data-edge-to="freeswitch" data-edge-label="RTP via eth0 (both directions)" data-edge-key="4" data-edge-id="rtp-fsw">
-          <rect x="599" y="253" width="154" height="14" rx="3" class="c-mask"/>
-          <text x="676" y="263" class="t-edge-default" font-size="8" text-anchor="middle">RTP via eth0 (both directions)</text>
+        <g data-detail="context" data-edge-from="rtpengine" data-edge-to="freeswitch" data-edge-label="RTP via eth0" data-edge-key="4" data-edge-id="rtp-fsw">
+          <rect x="706.2" y="267.5" width="67.6" height="14" rx="3" class="c-mask"/>
+          <text x="740" y="277.5" class="t-edge-emphasis" font-size="8" text-anchor="middle">RTP via eth0</text>
+        </g>
+        <g data-detail="context" data-edge-from="freeswitch" data-edge-to="kamailio" data-edge-label="drain: dispatcher.set_state (preStop)" data-edge-key="5" data-edge-id="drain-signal">
+          <rect x="542.2" y="162" width="187.6" height="14" rx="3" class="c-mask"/>
+          <text x="636" y="172" class="t-edge-default" font-size="8" text-anchor="middle">drain: dispatcher.set_state (preStop)</text>
+        </g>
+        <g data-detail="context" data-edge-from="dispatcher-sync" data-edge-to="k8s-api" data-edge-label="watch FreeSWITCH EndpointSlice" data-edge-key="6" data-edge-id="watch-eps">
+          <rect x="783" y="94" width="154" height="14" rx="3" class="c-mask"/>
+          <text x="860" y="104" class="t-edge-default" font-size="8" text-anchor="middle">watch FreeSWITCH EndpointSlice</text>
+        </g>
+        <g data-detail="context" data-edge-from="dispatcher-sync" data-edge-to="kamailio" data-edge-label="reconcile dispatcher.list (add/remove)" data-edge-key="7" data-edge-id="reconcile">
+          <rect x="466.8" y="126" width="192.4" height="14" rx="3" class="c-mask"/>
+          <text x="563" y="136" class="t-edge-default" font-size="8" text-anchor="middle">reconcile dispatcher.list (add/remove)</text>
         </g>
 
         <!-- Boundary labels (foreground masks keep routes out of titles) -->
-        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="Voice VLAN (192.168.50.0/24)">
-          <rect data-graph-role="structural-frame-label-mask" x="14" y="30" width="161.2" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="18" y="43" class="t-cloud" font-size="9" font-weight="600">Voice VLAN (192.168.50.0/24)</text>
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan">
+          <rect data-graph-role="structural-frame-label-mask" x="14" y="110" width="290.8" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="18" y="123" class="t-cloud" font-size="9" font-weight="600">Voice VLAN (192.168.50.0/24) · Multus ipvlan/macvlan</text>
         </g>
 
-        <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="region" data-composition-frame-label="Pod network">
-          <rect data-graph-role="structural-frame-label-mask" x="634" y="150" width="69.4" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="638" y="163" class="t-cloud" font-size="9" font-weight="600">Pod network</text>
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="region" data-composition-frame-label="Pod network · ordinary unprivileged pods">
+          <rect data-graph-role="structural-frame-label-mask" x="634" y="10" width="211.99999999999997" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="638" y="22.416666666666664" class="t-cloud" font-size="8.416666666666666" font-weight="600">Pod network · ordinary unprivileged pods</text>
         </g>
 
         <!-- Legend -->
@@ -5362,9 +5408,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <rect x="40" y="413" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
             <text x="62" y="422" class="t-muted" font-size="10" font-weight="500">Backend</text>
           </g>
-          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="149" data-legend-baseline="422" data-legend-width="93">
-            <rect x="149" y="413" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
-            <text x="171" y="422" class="t-muted" font-size="10" font-weight="500">External</text>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="Cloud" data-legend-x="149" data-legend-baseline="422" data-legend-width="74">
+            <rect x="149" y="413" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
+            <text x="171" y="422" class="t-muted" font-size="10" font-weight="500">Cloud</text>
+          </g>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="245" data-legend-baseline="422" data-legend-width="93">
+            <rect x="245" y="413" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
+            <text x="267" y="422" class="t-muted" font-size="10" font-weight="500">External</text>
           </g>
         </g>
       </svg>
@@ -5546,37 +5596,46 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <div class="cards">
       <div class="card">
         <div class="card-header">
-          <div class="card-dot rose"></div>
-          <h3>Root cause (before fix)</h3>
-        </div>
-        <ul>
-          <li>Whereabouts NAD used the rtpengine allocation pool range (192.168.50.128/26) as net1&#39;s own subnet mask</li>
-          <li>SBC (192.168.50.5) sits outside that /26, so the kernel&#39;s route table did not treat it as net1-local</li>
-          <li>Reverse RTP (FreeSWITCH → rtpengine → SBC) egressed via eth0&#39;s default route instead and was dropped in the pod network</li>
-        </ul>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
           <div class="card-dot emerald"></div>
-          <h3>Fix</h3>
+          <h3>No hostNetwork — pods own their address</h3>
         </div>
         <ul>
-          <li>nad-pool.yaml: ipam.range now carries the real /24 voice subnet</li>
-          <li>range_start/range_end (.128–.191) keep the Whereabouts allocation pool narrow without shrinking the interface mask</li>
-          <li>net1 now gets a /24 mask; `ip route get 192.168.50.5` resolves via net1, not the eth0 default route</li>
+          <li>Only Kamailio and rtpengine touch the voice VLAN (net1, Multus ipvlan/macvlan) — both run as ordinary unprivileged pods with a routable IP</li>
+          <li>rtpengine rewrites SDP so FreeSWITCH only ever sees pod-network addresses; no pod-network IP ever reaches the SBC</li>
+          <li>No privileged pods, no node-pinned containers — every edge pod is a normal, schedulable Deployment</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot cyan"></div>
-          <h3>Verified live</h3>
+          <h3>Membership derives from Kubernetes</h3>
         </div>
         <ul>
-          <li>3-point packet capture (rtpengine net1, rtpengine eth0, SBC&#39;s own interface) during a real demo_voice (9199) call</li>
-          <li>Reverse RTP decoded to a playable WAV with real signal (-31 dB mean, not silence)</li>
-          <li>Full call completed end-to-end: FreeSWITCH-initiated BYE, 200 OK — not signaling-only</li>
+          <li>dispatcher-sync watches the FreeSWITCH EndpointSlice and reconciles each Kamailio&#39;s live dispatcher.list via JSON-RPC — no hand-edited list</li>
+          <li>Scaling or restarting FreeSWITCH updates both Kamailio instances automatically within one poll tick</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Calls survive pod churn</h3>
+        </div>
+        <ul>
+          <li>FreeSWITCH&#39;s preStop hook flags itself inactive on both Kamailios, then waits for active calls to finish before the pod terminates</li>
+          <li>Verified live: delete a FreeSWITCH pod mid-call — new calls route around it, the original call completes, the pod exits only after drain</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Implementation note: an assumption we had to correct</h3>
+        </div>
+        <ul>
+          <li>Getting reverse-direction media (FreeSWITCH → rtpengine → SBC) working required fixing an initial assumption: the Whereabouts NAD sized rtpengine&#39;s net1 interface to the narrow allocation pool (/26) instead of the real /24 voice subnet, so the kernel routed SBC-bound RTP out eth0 instead</li>
+          <li>Fixed via range_start/range_end instead of letting range double as both subnet and pool; verified live with packet captures and decoded audio</li>
         </ul>
       </div>
     </div>
