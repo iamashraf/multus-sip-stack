@@ -16,6 +16,25 @@ A call enters through an SBC, which hands SIP signaling to one of two Kamailio i
 | FreeSWITCH | Media server, ordinary pod pool | Pod network only |
 | dispatcher-sync | Watches FreeSWITCH's EndpointSlice, keeps Kamailio's dispatcher list in sync | Pod network only |
 
+## Concepts
+
+| Term | What it is | Learn more |
+|---|---|---|
+| SBC | The signaling/media boundary a carrier exposes to the outside world | [Wikipedia](https://en.wikipedia.org/wiki/Session_border_controller) |
+| SIP | The protocol that sets up, modifies, and tears down a call | [RFC 3261](https://www.rfc-editor.org/rfc/rfc3261) |
+| SDP | Describes a media session (codecs, IPs, ports) inside SIP's offer/answer | [RFC 8866](https://www.rfc-editor.org/rfc/rfc8866) |
+| RTP | The protocol that carries the actual audio once a call is set up | [RFC 3550](https://www.rfc-editor.org/rfc/rfc3550) |
+| Voice VLAN | A network segment carrying only SIP/RTP traffic, isolated from everything else | [Wikipedia (802.1Q)](https://en.wikipedia.org/wiki/IEEE_802.1Q) |
+| Multus | A Kubernetes CNI meta-plugin that lets one pod attach more than one network interface | [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) |
+| NetworkAttachmentDefinition (NAD) | The CRD that tells Multus how to wire up an extra interface | [how-to-use.md](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/docs/how-to-use.md) |
+| ipvlan / macvlan | Linux virtual interfaces this project's NADs use to put a pod on the voice VLAN without a full virtual switch | [CNI plugins](https://www.cni.dev/plugins/current/main/ipvlan/) |
+| Whereabouts | The IPAM plugin that hands out voice-VLAN IPs cluster-wide without clashes | [whereabouts](https://github.com/k8snetworkplumbingwg/whereabouts) |
+| EndpointSlice | Kubernetes' own live list of which pod IPs back a Service | [k8s docs](https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/) |
+| hostNetwork | A pod mode that shares the host's network namespace instead of getting its own | [k8s docs](https://kubernetes.io/docs/concepts/cluster-administration/networking/) |
+| Kamailio | The open-source SIP server acting as the dispatcher here | [kamailio.org](https://www.kamailio.org/w/) |
+| rtpengine | The open-source media relay that anchors RTP across the two networks | [sipwise/rtpengine](https://github.com/sipwise/rtpengine) |
+| FreeSWITCH | The open-source media server that answers calls and plays audio | [freeswitch.org](https://freeswitch.org/) |
+
 ## Design principles
 
 - No `hostNetwork`, no privileged pods, without an explicit exception.
