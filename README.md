@@ -44,14 +44,6 @@ See [dev-docs/local-lab.md](dev-docs/local-lab.md) for the node layout, Podman-o
 - `local/check-addresses.sh <pcap>` fails if any pod-network IP leaked into SIP or SDP, checked against a capture taken from a real endpoint (not a bystander container, which only sees broadcast traffic on the bridge).
 - `local/capture.sh [iface]` takes that capture from inside the sbc container.
 
-## Project status
-
-| Phase | Status |
-|---|---|
-| 0-5: networking, Kamailio, rtpengine, FreeSWITCH, dynamic membership + graceful drain | Built and verified live |
-| 6: Go operator (replaces the dispatcher-sync sidecar) | In progress |
-| 7: Autoscaling + observability | Not started |
-
 ## Repo layout
 
 - `charts/` — Helm charts, one per component
