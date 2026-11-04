@@ -11,15 +11,38 @@ import (
 	"sort"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/iamashraf/multus-sip-stack/config/dispatcher-operator/internal/dispatch"
 	"github.com/iamashraf/multus-sip-stack/config/dispatcher-operator/internal/kamailio"
 )
+
+var (
+	syncAddTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "dispatcher_sync_add_total",
+		Help: "Total number of dispatcher entries added to a target.",
+	}, []string{"target"})
+
+	syncRemoveTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "dispatcher_sync_remove_total",
+		Help: "Total number of dispatcher entries removed from a target.",
+	}, []string{"target"})
+
+	syncLastSuccessTime = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "dispatcher_sync_last_success_time_seconds",
+		Help: "Unix time of the last successful reconcile pass for a target.",
+	}, []string{"target"})
+)
+
+func init() {
+	metrics.Registry.MustRegister(syncAddTotal, syncRemoveTotal, syncLastSuccessTime)
+}
 
 // targetCallTimeout bounds how long Reconcile waits on a single target's
 // List/Add/Remove calls, so one unreachable or hung Kamailio instance can't
@@ -98,6 +121,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, _ ctrl.Request) (ctrl.Result
 
 		toAdd, toRemove := dispatch.Diff(desired, current)
 
+		// targetSucceeded tracks whether this target's whole pass (every
+		// Add/Remove) completed with no error, for syncLastSuccessTime.
+		targetSucceeded := true
+
 		// targetFaulted stops further writes to this target once it hits
 		// the rate limit: they would fail too, so there is no point.
 		targetFaulted := false
@@ -107,25 +134,34 @@ func (r *Reconciler) Reconcile(ctx context.Context, _ ctrl.Request) (ctrl.Result
 			}
 			uri := fmt.Sprintf("sip:%s:%d", ip, r.Port)
 			if err := tc.Add(tctx, r.DispatcherGroup, uri); err != nil {
+				targetSucceeded = false
 				if errors.Is(err, kamailio.ErrOngoingReload) {
 					needsRequeue = true
 					targetFaulted = true
 					continue
 				}
 				errs = append(errs, fmt.Errorf("target %s: add %s: %w", name, uri, err))
+				continue
 			}
+			syncAddTotal.WithLabelValues(name).Inc()
 		}
 		if !targetFaulted {
 			for ip := range toRemove {
 				uri := fmt.Sprintf("sip:%s:%d", ip, r.Port)
 				if err := tc.Remove(tctx, r.DispatcherGroup, uri); err != nil {
+					targetSucceeded = false
 					if errors.Is(err, kamailio.ErrOngoingReload) {
 						needsRequeue = true
 						break
 					}
 					errs = append(errs, fmt.Errorf("target %s: remove %s: %w", name, uri, err))
+					continue
 				}
+				syncRemoveTotal.WithLabelValues(name).Inc()
 			}
+		}
+		if targetSucceeded {
+			syncLastSuccessTime.WithLabelValues(name).Set(float64(time.Now().Unix()))
 		}
 		cancel()
 	}
