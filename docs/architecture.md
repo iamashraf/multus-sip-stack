@@ -2,6 +2,8 @@
 
 A SIP voice stack on RKE2: an SBC hands calls to Kamailio, which dispatches to a FreeSWITCH pool, with rtpengine anchoring media between the SBC's voice network and the cluster's pod network. The design exists because standard Kubernetes networking (Services, kube-proxy, overlay NAT) cannot carry a SIP/RTP session without breaking it.
 
+[Interactive runtime architecture diagram](runtime-architecture.html) — media relay topology, including the reverse-RTP fix (rtpengine's `net1` interface mask), explorable in a browser.
+
 ## Call path
 
 ```

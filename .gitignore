@@ -3,3 +3,4 @@ local/*.wav
 local/*.hex
 local/*.al
 local/*.ul
+.archify/
