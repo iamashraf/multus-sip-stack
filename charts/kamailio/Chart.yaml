@@ -1,0 +1,4 @@
+apiVersion: v2
+name: kamailio
+description: Minimal Kamailio dispatcher (A/B) with rtpengine integration
+version: 0.1.0

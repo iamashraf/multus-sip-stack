@@ -1,0 +1,12 @@
+namespace: voice
+
+voiceNetwork:
+  attachmentType: ipvlan   # production default; environments/local overrides to macvlan
+  master: ""                # real NIC (e.g. net1) or, locally, the kind node's eth1 - set per environment
+  subnet: ""                 # set per environment
+  routes: []                 # SBC-subnet routes via the VLAN gateway - set per environment
+
+rtpengine:
+  pool:
+    rangeStart: ""   # set per environment - allocatable sub-range within voiceNetwork.subnet
+    rangeEnd: ""

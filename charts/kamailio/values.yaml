@@ -1,0 +1,13 @@
+namespace: voice
+image: localhost/kamailio:local
+rtpengineHost: rtpengine.voice.svc.cluster.local
+
+instances:
+  - name: kamailio-a
+    ip: ""
+  - name: kamailio-b
+    ip: ""
+
+# FreeSWITCH pod IPs for the dispatcher list (setid 1). Phase 5 replaces
+# this with EndpointSlice-driven sync; for now it's a plain static list.
+dispatcher: []

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: freeswitch
+description: Minimal FreeSWITCH pool - pod network only, default dialplan echo test
+version: 0.1.0

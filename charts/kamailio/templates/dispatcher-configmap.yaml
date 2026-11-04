@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kamailio-dispatcher
+  namespace: {{ .Values.namespace }}
+data:
+  dispatcher.list: |
+{{- range .Values.dispatcher }}
+    1 sip:{{ . }}:5060 0 0
+{{- end }}

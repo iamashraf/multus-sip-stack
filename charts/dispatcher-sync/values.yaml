@@ -1,0 +1,12 @@
+namespace: voice
+# Reuses the kamailio image - it already has python3/bash (Debian base),
+# so this avoids building and loading a second image into kind.
+image: localhost/kamailio:local
+
+freeswitchService: freeswitch
+kamailioTargets:
+  - kamailio-a
+  - kamailio-b
+
+pollIntervalSeconds: 3
+dispatcherGroup: 1

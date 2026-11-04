@@ -1,0 +1,4 @@
+apiVersion: v2
+name: dispatcher-sync
+description: Polls the FreeSWITCH EndpointSlice and keeps both Kamailio dispatcher sets current
+version: 0.1.0

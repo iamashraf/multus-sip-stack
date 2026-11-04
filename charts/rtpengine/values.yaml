@@ -1,0 +1,4 @@
+namespace: voice
+image: localhost/rtpengine:local
+rtpPortMin: 30000
+rtpPortMax: 30100

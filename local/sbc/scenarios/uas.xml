@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+<!-- Based on SIPp's bundled docs/uas.xml (SIPp/sipp, GPL-2.0). Answers
+     uac.xml and long-call.xml. Does not handle in-dialog re-INVITEs, so it
+     is not a valid peer for hold-reinvite.xml - that needs a real UA
+     (Kamailio/FreeSWITCH, from Phase 2 on) on the other end. A generic
+     "accept 0-N re-INVITEs" UAS can't be built correctly from a fixed
+     optional-send pairing (send doesn't gate on whether its paired recv
+     actually matched), so it's not attempted here. -->
+<!--
+  shortcut: no scenario here answers an in-dialog re-INVITE; hold-reinvite.xml
+  can only be run end to end once Phase 2+ provides a real UAS.
+-->
+<scenario name="UAS responder">
+  <recv request="INVITE" crlf="true"></recv>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 180 Ringing
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <send retrans="500">
+    <![CDATA[
+
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_Record-Route:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Type: application/sdp
+      Content-Length: [len]
+
+      v=0
+      o=user1 53655765 2353687637 IN IP[media_ip_type] [media_ip]
+      s=-
+      c=IN IP[media_ip_type] [media_ip]
+      t=0 0
+      m=audio [media_port] RTP/AVP 0
+      a=rtpmap:0 PCMU/8000
+
+    ]]>
+  </send>
+
+  <recv request="ACK" optional="true" rtd="true" crlf="true"></recv>
+
+  <recv request="BYE"></recv>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_From:]
+      [last_To:]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Contact: <sip:[local_ip]:[local_port];transport=[transport]>
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <timewait milliseconds="4000"/>
+
+  <ResponseTimeRepartition value="10, 20, 30, 40, 50, 100, 150, 200"/>
+  <CallLengthRepartition value="10, 50, 100, 500, 1000, 5000, 10000"/>
+</scenario>

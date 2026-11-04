@@ -1,0 +1,39 @@
+# Throwaway pods proving Phase 1's acceptance criteria. Not part of any
+# chart - apply, check, delete.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nad-check-static
+  namespace: voice
+  annotations:
+    k8s.v1.cni.cncf.io/networks: '[{"name":"voice-static","ips":["192.168.50.22/24"]}]'
+spec:
+  tolerations:
+    - key: voice-edge
+      operator: Exists
+      effect: NoSchedule
+  nodeSelector:
+    voice-role: edge
+  containers:
+    - name: check
+      image: nicolaka/netshoot:v0.16
+      command: ["sleep", "3600"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nad-check-pool
+  namespace: voice
+  annotations:
+    k8s.v1.cni.cncf.io/networks: voice-pool
+spec:
+  tolerations:
+    - key: voice-edge
+      operator: Exists
+      effect: NoSchedule
+  nodeSelector:
+    voice-role: edge
+  containers:
+    - name: check
+      image: nicolaka/netshoot:v0.16
+      command: ["sleep", "3600"]

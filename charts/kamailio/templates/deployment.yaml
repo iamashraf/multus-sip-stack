@@ -1,0 +1,42 @@
+{{- range .Values.instances }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .name }}
+        role: kamailio
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[{"name":"voice-static","ips":["{{ .ip }}/24"]}]'
+    spec:
+      tolerations:
+        - key: voice-edge
+          operator: Exists
+          effect: NoSchedule
+      nodeSelector:
+        voice-role: edge
+      containers:
+        - name: kamailio
+          image: {{ $.Values.image }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RTPENGINE_HOST
+              value: "{{ $.Values.rtpengineHost }}"
+          volumeMounts:
+            - name: dispatcher
+              mountPath: /etc/kamailio/dispatcher.list
+              subPath: dispatcher.list
+      volumes:
+        - name: dispatcher
+          configMap:
+            name: kamailio-dispatcher
+---
+{{- end }}

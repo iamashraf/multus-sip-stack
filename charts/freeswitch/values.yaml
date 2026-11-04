@@ -1,0 +1,8 @@
+namespace: voice
+image: ghcr.io/patrickbaus/freeswitch-docker:1.11.3
+replicas: 2
+# Lab-sized, not the 3600s the production doc proposes - long enough to
+# let a short demo call finish draining, not so long a `kubectl delete`
+# hangs around for an hour.
+drainTimeoutSeconds: 50
+terminationGracePeriodSeconds: 60

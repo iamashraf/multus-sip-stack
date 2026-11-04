@@ -1,0 +1,4 @@
+apiVersion: v2
+name: voice-network
+description: Namespace and NetworkAttachmentDefinitions for the voice VLAN (net1)
+version: 0.1.0

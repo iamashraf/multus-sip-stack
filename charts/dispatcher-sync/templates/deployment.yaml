@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcher-sync
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dispatcher-sync
+  template:
+    metadata:
+      labels:
+        app: dispatcher-sync
+    spec:
+      serviceAccountName: dispatcher-sync
+      containers:
+        - name: dispatcher-sync
+          image: {{ .Values.image }}
+          imagePullPolicy: IfNotPresent
+          # Override the kamailio image's entrypoint - we only want python3.
+          command: ["python3", "/dispatcher-sync.py"]
+          env:
+            - name: NAMESPACE
+              value: {{ .Values.namespace }}
+            - name: FREESWITCH_SERVICE
+              value: {{ .Values.freeswitchService }}
+            - name: KAMAILIO_TARGETS
+              value: "{{ join "," .Values.kamailioTargets }}"
+            - name: POLL_INTERVAL_SECONDS
+              value: "{{ .Values.pollIntervalSeconds }}"
+            - name: DISPATCHER_GROUP
+              value: "{{ .Values.dispatcherGroup }}"
+          volumeMounts:
+            - name: sync-script
+              mountPath: /dispatcher-sync.py
+              subPath: sync.py
+      volumes:
+        - name: sync-script
+          configMap:
+            name: dispatcher-sync
+            defaultMode: 0755

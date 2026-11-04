@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dispatcher-sync
+  namespace: {{ .Values.namespace }}
+data:
+  sync.py: |-
+{{ .Files.Get "files/sync.py" | indent 4 }}

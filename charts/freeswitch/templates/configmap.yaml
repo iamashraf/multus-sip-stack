@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: freeswitch-vars
+  namespace: {{ .Values.namespace }}
+data:
+  vars.xml: |-
+{{ .Files.Get "files/vars.xml" | indent 4 }}
+  internal.xml: |-
+{{ .Files.Get "files/internal.xml" | indent 4 }}
+  drain.sh: |-
+{{ .Files.Get "files/drain.sh" | indent 4 }}
+  default.xml: |-
+{{ .Files.Get "files/default.xml" | indent 4 }}

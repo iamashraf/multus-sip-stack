@@ -1,0 +1,114 @@
+#!KAMAILIO
+# Bare-minimum dispatcher + rtpengine proxy. No SBC allowlisting, no RPC
+# control, no metrics - just enough to route a call. net1/eth0 IPs and the
+# rtpengine control socket are substituted in by entrypoint.sh at startup.
+
+debug=2
+log_stderror=yes
+fork=yes
+children=2
+tcp_accept_no_cl=yes
+
+listen=udp:__NET1_IP__:5060
+listen=udp:__ETH0_IP__:5060
+# JSON-RPC over HTTP, eth0 only - never reachable from the SBC side. This is
+# how a drain marks this instance's dispatcher entries inactive/active; see
+# event_route[xhttp:request] below.
+listen=tcp:__ETH0_IP__:8080
+
+loadmodule "tm.so"
+loadmodule "sl.so"
+loadmodule "rr.so"
+loadmodule "pv.so"
+loadmodule "maxfwd.so"
+loadmodule "textops.so"
+loadmodule "siputils.so"
+loadmodule "dispatcher.so"
+loadmodule "rtpengine.so"
+loadmodule "xhttp.so"
+loadmodule "jsonrpcs.so"
+
+modparam("rtpengine", "rtpengine_sock", "udp:__RTPENGINE_HOST__:2223")
+modparam("jsonrpcs", "transport", 1)
+
+event_route[xhttp:request] {
+	if ($hu =~ "^/RPC") {
+		jsonrpc_dispatch();
+	} else {
+		xhttp_reply("404", "Not Found", "text/plain", "");
+	}
+	exit;
+}
+
+request_route {
+	if (!mf_process_maxfwd_header("10")) {
+		sl_send_reply("483", "Too Many Hops");
+		exit;
+	}
+
+	if (is_method("OPTIONS") && uri == myself) {
+		sl_send_reply("200", "OK");
+		exit;
+	}
+
+	# Kamailio doesn't pick the outbound socket by destination reachability -
+	# with two listen addresses it relays out whichever one it feels like,
+	# which breaks replies when that happens to be net1 for an
+	# internal-bound request (FreeSWITCH can't route back to a voice-VLAN
+	# address). force_send_socket() makes this explicit both ways.
+	if (has_totag()) {
+		if (loose_route()) {
+			# rtpengine_manage() also handles the in-dialog cases: a hold/
+			# unhold re-INVITE needs a fresh offer/answer round (hence the
+			# onreply hook again), a BYE needs the session torn down.
+			if (is_method("INVITE")) {
+				rtpengine_manage("trust-address direction=public direction=internal");
+				t_on_reply("MANAGE_REPLY");
+			} else if (is_method("BYE")) {
+				rtpengine_manage();
+			}
+			if ($Ri == "__NET1_IP__") {
+				force_send_socket(udp:__ETH0_IP__:5060);
+			} else {
+				force_send_socket(udp:__NET1_IP__:5060);
+			}
+			route(RELAY);
+		} else if (is_method("ACK")) {
+			exit;
+		} else {
+			sl_send_reply("404", "Not here");
+		}
+		exit;
+	}
+
+	if (is_method("INVITE")) {
+		record_route();
+		rtpengine_manage("trust-address direction=public direction=internal");
+		t_on_reply("MANAGE_REPLY");
+		if (!ds_select_dst("1", "4")) {
+			sl_send_reply("503", "No destination");
+			exit;
+		}
+		force_send_socket(udp:__ETH0_IP__:5060);
+		route(RELAY);
+		exit;
+	}
+
+	sl_send_reply("404", "Not Found");
+}
+
+route[RELAY] {
+	if (!t_relay()) {
+		sl_send_reply("500", "Relay failed");
+	}
+	exit;
+}
+
+# Without this, FreeSWITCH's own pod IP (not rtpengine's net1 address)
+# would go out in the SDP of every 1xx/2xx reply - exactly the
+# pod-network-IP-leak this project exists to avoid.
+onreply_route[MANAGE_REPLY] {
+	if (status =~ "^(1[0-9][0-9]|2[0-9][0-9])$" && has_body("application/sdp")) {
+		rtpengine_manage("trust-address");
+	}
+}

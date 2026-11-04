@@ -1,0 +1,15 @@
+{{- range .Values.instances }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  selector:
+    app: {{ .name }}
+  ports:
+    - name: rpc
+      port: 8080
+      protocol: TCP
+---
+{{- end }}

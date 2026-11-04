@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: freeswitch
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: freeswitch
+  template:
+    metadata:
+      labels:
+        app: freeswitch
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      nodeSelector:
+        voice-role: media
+      containers:
+        - name: freeswitch
+          image: {{ .Values.image }}
+          imagePullPolicy: Never
+          env:
+            - name: FS_NAMESPACE
+              value: {{ .Values.namespace }}
+            - name: DRAIN_TIMEOUT
+              value: "{{ .Values.drainTimeoutSeconds }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "/drain.sh"]
+          volumeMounts:
+            - name: vars
+              mountPath: /etc/freeswitch/vars.xml
+              subPath: vars.xml
+            - name: vars
+              mountPath: /etc/freeswitch/sip_profiles/internal.xml
+              subPath: internal.xml
+            - name: vars
+              mountPath: /drain.sh
+              subPath: drain.sh
+            - name: vars
+              mountPath: /etc/freeswitch/dialplan/default.xml
+              subPath: default.xml
+      volumes:
+        - name: vars
+          configMap:
+            name: freeswitch-vars
+            defaultMode: 0755

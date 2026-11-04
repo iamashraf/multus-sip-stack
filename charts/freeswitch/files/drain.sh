@@ -1,0 +1,1 @@
+../../../config/freeswitch/drain.sh

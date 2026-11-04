@@ -1,0 +1,29 @@
+# The voice network and the fake SBC, as one unit: `podman compose up -d` /
+# `down` brings up or tears down both together. The kind cluster is a
+# separate lifecycle (kind owns it, not compose); the Makefile still runs
+# ./voice-net.sh to attach the kind-managed edge worker containers to this
+# same "voice" network once it exists.
+networks:
+  voice:
+    name: voice
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.50.0/24
+          ip_range: 192.168.50.0/28
+
+services:
+  sbc:
+    container_name: sbc
+    image: localhost/sbc:local
+    build:
+      context: ./sbc
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./sbc/scenarios:/scenarios:ro
+    networks:
+      voice:
+        ipv4_address: 192.168.50.5
