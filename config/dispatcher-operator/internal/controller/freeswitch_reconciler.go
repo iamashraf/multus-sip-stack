@@ -49,6 +49,13 @@ func init() {
 // stall syncing the rest for an unbounded time.
 const targetCallTimeout = 10 * time.Second
 
+// resyncPeriod re-triggers Reconcile on a timer even when no EndpointSlice
+// event fires, so drift introduced directly on a Kamailio instance (a manual
+// dispatcher.add/remove, or a Kamailio restart reloading its static
+// ConfigMap) gets corrected without waiting for an unrelated EndpointSlice
+// change to wake the reconciler.
+const resyncPeriod = 5 * time.Second
+
 // TargetClient is the Kamailio dispatcher operation set the reconciler needs.
 // *kamailio.Client satisfies it.
 type TargetClient interface {
@@ -178,7 +185,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, _ ctrl.Request) (ctrl.Result
 		return ctrl.Result{}, errors.Join(errs...)
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: resyncPeriod}, nil
 }
 
 // SetupWithManager registers the Reconciler to watch EndpointSlices labeled
