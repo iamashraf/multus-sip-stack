@@ -88,6 +88,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, _ ctrl.Request) (ctrl.Result
 		current, err := tc.List(tctx, r.DispatcherGroup)
 		if err != nil {
 			cancel()
+			if errors.Is(err, kamailio.ErrOngoingReload) {
+				needsRequeue = true
+				continue
+			}
 			errs = append(errs, fmt.Errorf("target %s: list: %w", name, err))
 			continue
 		}

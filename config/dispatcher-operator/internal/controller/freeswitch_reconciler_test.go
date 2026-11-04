@@ -561,6 +561,42 @@ func TestReconcile_OngoingReloadRequeuesWithoutHardError(t *testing.T) {
 	}
 }
 
+// TestReconcile_ListOngoingReloadRequeuesWithoutHardError covers the same
+// constraint as the test above, but for the List call specifically.
+// kamailio.Client's call() helper wraps ErrOngoingReload generically for
+// any RPC method's "Ongoing reload" fault, dispatcher.list included, so
+// Reconcile must treat a List failure wrapping the sentinel the same way
+// it treats one from Add/Remove: RequeueAfter, never a hard error.
+func TestReconcile_ListOngoingReloadRequeuesWithoutHardError(t *testing.T) {
+	fakeClient := fake.NewClientBuilder().
+		WithScheme(testScheme).
+		WithObjects(directTestSlice("fs-direct-list-reload", []string{"10.244.5.3"})).
+		Build()
+
+	a := &stubTarget{listErr: fmt.Errorf("list: %w", kamailio.ErrOngoingReload)}
+	b := &stubTarget{current: dispatch.IPSet{}}
+
+	r := &Reconciler{
+		Client:            fakeClient,
+		Namespace:         testNamespace,
+		FreeSwitchService: testService,
+		DispatcherGroup:   testGroup,
+		Port:              testPort,
+		Targets:           map[string]TargetClient{"kamailio-a": a, "kamailio-b": b},
+	}
+
+	res, err := r.Reconcile(context.Background(), ctrl.Request{})
+	if err != nil {
+		t.Fatalf("Reconcile returned error %v, want nil: an Ongoing-reload fault from List must not be a hard error", err)
+	}
+	if res.RequeueAfter < 5*time.Second || res.RequeueAfter >= 6*time.Second {
+		t.Errorf("RequeueAfter = %v, want in [5s, 6s) (5s plus up to 1s jitter)", res.RequeueAfter)
+	}
+	if b.addCallCount() == 0 {
+		t.Error("kamailio-b.Add was never called: kamailio-a's List reload fault must not stop other targets from being synced")
+	}
+}
+
 // TestReconcile_SlowTargetDoesNotBlockOthersForever asserts the per-target
 // call timeout: a target that never responds (e.g. a dead pod IP dropping
 // packets, not refusing the connection) must not stall the whole reconcile
