@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.freeswitchService }}
+  namespace: {{ .Values.namespace }}
+spec:
+  # Nothing routes calls through this VIP - it exists only so Kubernetes
+  # generates an EndpointSlice tracking ready FreeSWITCH pods.
+  clusterIP: None
+  selector:
+    app: freeswitch
+  ports:
+    - name: sip
+      port: 5060
+      protocol: UDP

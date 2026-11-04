@@ -1,0 +1,47 @@
+{{- $targets := list -}}
+{{- range .Values.kamailioTargets }}
+{{- $targets = append $targets (printf "%s=http://%s.%s.svc.cluster.local:8080/RPC" .name .name $.Values.namespace) }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dispatcher-operator
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: dispatcher-operator
+  template:
+    metadata:
+      labels:
+        app: dispatcher-operator
+    spec:
+      serviceAccountName: dispatcher-operator
+      containers:
+        - name: dispatcher-operator
+          image: {{ .Values.image }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsNonRoot: true
+          args:
+            - --namespace={{ .Values.namespace }}
+            - --freeswitch-service={{ .Values.freeswitchService }}
+            - --kamailio-targets={{ join "," $targets }}
+            - --dispatcher-group={{ .Values.dispatcherGroup }}
+            - --port={{ .Values.port }}
+            - --leader-elect=true
+          ports:
+            - name: metrics
+              containerPort: 8443
+            - name: health
+              containerPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
