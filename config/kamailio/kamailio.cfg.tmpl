@@ -4,6 +4,14 @@
 # entrypoint.sh at startup. Media is anchored directly between the SBC and
 # FreeSWITCH's own net1 address (see ADR 002) - Kamailio is SIP-only and
 # never touches RTP or SDP.
+#
+# topos (ADR 003) hides FreeSWITCH's and Kamailio's real addresses from
+# Record-Route/Via/Contact, using topos_htable (in-memory, no DB/Redis -
+# see ADR 003's decision) as the mapping store. It needs no route-script
+# calls beyond the record_route() already below; it rewrites headers via
+# its own callbacks on every relayed request/reply. Tradeoff accepted:
+# mappings are per-instance (not shared Kamailio A/B) and don't survive a
+# restart - fine, since they only need to live for one call's duration.
 
 debug=2
 log_stderror=yes
@@ -28,8 +36,19 @@ loadmodule "siputils.so"
 loadmodule "dispatcher.so"
 loadmodule "xhttp.so"
 loadmodule "jsonrpcs.so"
+loadmodule "htable.so"
+loadmodule "topos.so"
+loadmodule "topos_htable.so"
 
 modparam("jsonrpcs", "transport", 1)
+
+modparam("topos", "storage", "htable")
+# dmqreplicate=0: no dmq module loaded - mappings stay local to this
+# Kamailio instance, which is the accepted tradeoff for topos_htable
+# (see ADR 003). autoexpire covers a stuck/abandoned dialog; cleanup
+# otherwise follows the call's own BYE.
+modparam("topos_htable", "topos_htable_dialog", "topos_dialog=>size=4;autoexpire=7200;dmqreplicate=0")
+modparam("topos_htable", "topos_htable_transaction", "topos_transaction=>size=4;autoexpire=7200")
 
 event_route[xhttp:request] {
 	if ($hu =~ "^/RPC") {
