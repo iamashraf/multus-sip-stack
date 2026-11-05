@@ -62,7 +62,19 @@ def rpc(target, method, params):
 
 
 def current_dispatcher_ips(target):
-    result = rpc(target, "dispatcher.list", [])
+    try:
+        result = rpc(target, "dispatcher.list", [])
+    except urllib.error.HTTPError as exc:
+        # Kamailio returns this 500 when the dispatcher table has no sets
+        # at all yet (e.g. right after boot with an empty seed list) - it
+        # means "nothing here", not a real RPC failure. Treating it as a
+        # fatal error (the original bug) made sync_target() give up for
+        # the whole tick and never call dispatcher.add, so the set could
+        # never be created - confirmed live after switching the boot seed
+        # to an empty list (ADR 002).
+        if exc.code == 500 and "No Destination Sets" in str(exc.reason):
+            return set()
+        raise
     ips = set()
     for record in result.get("result", {}).get("RECORDS", []):
         if record["SET"]["ID"] != DISPATCHER_GROUP:

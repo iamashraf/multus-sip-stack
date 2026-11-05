@@ -22,11 +22,13 @@ instances:
   - name: kamailio-b
     ip: 192.168.50.21
 
-# charts/kamailio - FreeSWITCH pod IPs for the dispatcher list. Static for
-# now (bare-minimum demo); Phase 5 replaces this with EndpointSlice sync.
-dispatcher:
-  - 10.244.3.36
-  - 10.244.3.35
+# charts/kamailio - boot-time seed for the dispatcher list. Empty on
+# purpose: dispatcher-sync is the live source of truth (it reconciles
+# against the FreeSWITCH EndpointSlice within one poll tick of startup),
+# so a hardcoded IP here only outlives the pod it once pointed at. A
+# stale pair of IPs left over here previously caused real dropped calls
+# every time Kamailio restarted - see ADR 002.
+dispatcher: []
 
 # charts/voice-network - sizes the voice-pool NAD for FreeSWITCH, which now
 # owns its own net1 IP and anchors media directly with the SBC (ADR 002).

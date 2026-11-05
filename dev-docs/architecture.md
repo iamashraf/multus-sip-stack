@@ -92,19 +92,21 @@ necessity review — `dispatcher-sync` is the kept implementation.
   `kubectl delete`-ing a FreeSWITCH pod both update both Kamailio instances
   within one poll tick with no manual step; deleting a Kamailio pod and
   manually drifting its in-memory dispatcher set both self-heal the same way.
-- Known gap, not yet addressed: FreeSWITCH has no readiness probe, so a new
-  pod can be added to the dispatcher before SIP is actually listening.
+- FreeSWITCH has a `readinessProbe` (checks Sofia's `internal` profile is
+  bound) so a new pod isn't added to the dispatcher before SIP is actually
+  listening — closed after a live load test caught real dropped calls from
+  this exact gap (see [ADR 002](adr/002-remove-rtpengine.md)).
 
 ## Decisions made
 
 - Media path: the SBC anchors media directly with FreeSWITCH's own `net1`; no media relay in the cluster. See [ADR 002](adr/002-remove-rtpengine.md) (supersedes the deferred "media relay vs. Calico BGP" question below).
 - Dispatcher sync: `dispatcher-sync` (Python poll loop) kept; the `dispatcher-operator` Go alternative evaluated and removed. See [ADR 001](adr/001-necessity-review.md).
+- Kamailio topology hiding (`topos`): implemented with `topos_htable` (in-memory, no new infrastructure) — closes the SIP-header pod-IP leak ADR 001 found. See [ADR 003](adr/003-topos-state-store.md).
 
 ## Decisions deferred to ADRs
 
 Tracked in `dev-docs/adr/`, written when each choice is made, not before:
 
-- Kamailio topology hiding (`topos`) state store: database vs. Redis.
 - ipvlan vs. macvlan for the voice NAD (default ipvlan L2; macvlan only if the network team confirms no per-port MAC limit).
 - TLS/SRTP: out of scope through Phase 5; where termination would happen if added.
 - Kamailio dialog/registration state sharing (DMQ vs. shared DB), if needed.

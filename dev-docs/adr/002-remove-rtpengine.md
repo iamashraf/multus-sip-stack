@@ -49,7 +49,7 @@ Note, corrected against the original premise: as actually built in this repo, rt
 - `freeswitch.pool.rangeStart`/`rangeEnd` replace `rtpengine.pool.*`.
 - `charts/voice-network/templates/nad-pool.yaml` now fails `helm template`/`helm install` with a clear message if the pool is smaller than `freeswitch.maxReplicas + maxSurge + poolHeadroom` (new values, documented in `charts/voice-network/values.yaml`). Shortcut: assumes `rangeStart`/`rangeEnd` share one /24; doesn't support a range spanning a subnet boundary.
 
-**Kamailio**: SIP only now. `record_route()` stays. Topology hiding (`topos`) is proposed separately — see [ADR 003](003-topos-state-store.md) — and was not added in this pass, per the instruction to ask before adding its state store.
+**Kamailio**: SIP only now. `record_route()` stays. Topology hiding (`topos`) is proposed separately — see [ADR 003](003-topos-state-store.md) — and was not added in this pass, per the instruction to ask before adding its state store. (Added in a later pass - see "topos and the AC5 load test" below.)
 
 **Local lab**: all three kind workers (not two) attach to the `voice` Docker network (`local/voice-net.sh`, `local/kind.yaml`), since FreeSWITCH needs it now too. `local/addons.sh`'s CNI-plugin-copy step now targets all `voice-role=voice` nodes instead of just the former edge pair.
 
@@ -62,7 +62,7 @@ Note, corrected against the original premise: as actually built in this repo, rt
 - FreeSWITCH now needs voice-VLAN nodes, not just ordinary pod-network nodes — a bigger footprint on the constrained VLAN-attached node pool.
 - A larger IP block: the pool now has to cover FreeSWITCH's replica ceiling plus rollout surge plus headroom, not a small fixed relay pool.
 - No central point for media-layer stats — rtpengine's `rtpengine-ng` control port was a natural place to pull jitter/loss from across every call; that now has to come from FreeSWITCH's own call variables per pod (already the plan for `make quality` regardless).
-- A `topos` state store, once that ADR is accepted — not previously needed because rtpengine's own SDP rewriting incidentally also kept FreeSWITCH's address out of Kamailio's visible SIP headers to some degree; it never fully worked (see ADR 001), so this is a pre-existing gap being closed properly, not new cost caused by this change.
+- A `topos` state store — not previously needed because rtpengine's own SDP rewriting incidentally also kept FreeSWITCH's address out of Kamailio's visible SIP headers to some degree; it never fully worked (see ADR 001), so this is a pre-existing gap being closed properly, not new cost caused by this change. (Implemented in a later pass via `topos_htable`, no new infrastructure — see ADR 003.)
 
 ## Triggers that would bring a media relay back
 
@@ -81,8 +81,8 @@ The `charts/rtpengine` chart is deleted, not disabled-by-default — if one of t
 **Live** (kind lab recreated with the new `kind.yaml`/topology, `kamailio` and `freeswitch` images rebuilt and kind-loaded, all 4 charts installed):
 
 - **AC3 (direct audio)**: confirmed. A real call through `test/sipp/media-flow-check.sh` showed 249/244 RTP packets flowing both directions directly between the SBC (`192.168.50.5`) and the FreeSWITCH pod that took the call (`192.168.50.128`, its own `net1`) — no relay IP anywhere in the capture. `fs_cli -x "sofia status profile internal"` confirmed `RTP-IP`/`Ext-RTP-IP` = the `net1` address, `SIP-IP`/`Ext-SIP-IP` = the `eth0` address, exactly as designed.
-- **AC4 (address/interface/direct-path)**: SDP body is clean — zero pod-network IPs in any `c=` line, confirmed directly from the capture. The SIP **header** check fails as expected: `local/check-addresses.sh` (now scanning headers too, per the fix in ADR 001) correctly caught the same pre-existing `Record-Route`/`Contact` pod-IP leak ADR 001 found by static analysis — this is the known, pending-`topos` gap, not a regression from this change.
-- **AC5 (scale/rollout, no pool exhaustion)**: scaled FreeSWITCH 2→4→2. Every pod got a unique `net1` IP from the pool (`.128`-`.131`), no allocation conflicts, no stuck `Terminating` pods on scale-down. Did not run a full SIPp load test with concurrent in-flight calls during the scale event in this pass - that's a heavier test left for a dedicated load-test session.
+- **AC4 (address/interface/direct-path)**: SDP body is clean — zero pod-network IPs in any `c=` line, confirmed directly from the capture. The SIP **header** check initially failed as expected (the pre-existing `Record-Route`/`Contact` pod-IP leak ADR 001 found by static analysis) — **now closed**: `topos`/`topos_htable` (ADR 003) is implemented, and the header check passes clean on a live call. See "topos and the AC5 load test" below.
+- **AC5 (scale/rollout, no pool exhaustion)**: scaled FreeSWITCH 2→4→2. Every pod got a unique `net1` IP from the pool (`.128`-`.131`), no allocation conflicts, no stuck `Terminating` pods on scale-down. The heavier variant (concurrent calls in flight during the scale event) is now also done — see below.
 - **AC6 (hold/unhold)**: confirmed. A real call with two in-dialog re-INVITEs (hold, then unhold) both got `200 OK` through Kamailio's loose-routing, with a clean `BYE`/`200` after.
 
 **Three real bugs this live pass caught and fixed** (not caught by static review):
@@ -90,10 +90,23 @@ The `charts/rtpengine` chart is deleted, not disabled-by-default — if one of t
 2. `charts/dispatcher-sync` had no toleration for the new, merged `voice-node` taint. Before this change, one lab worker (the old `media` pool) was untainted and absorbed ordinary workloads; after merging edge+media into one uniformly-tainted voice-node pool, `dispatcher-sync` had zero nodes left to schedule on (`FailedScheduling: 0/4 nodes are available`). Fixed by adding a toleration (no `nodeSelector`/NAD - it doesn't need `net1`, just permission to coexist on the same nodes).
 3. `config/freeswitch/build.sh`'s `ctr images import` silently failed on every node ("image might be filtered out", no other error) because the upstream base image is `amd64`-only and this lab host is arm64 - containerd's default import filters non-native-platform images. Fixed by adding `--all-platforms`.
 
+## topos and the AC5 load test
+
+Done in a later pass, after the above: `topos`/`topos_htable` implemented per [ADR 003](003-topos-state-store.md) (user chose `topos_htable` - no new infrastructure), and the full AC5 load test (concurrent calls in flight during a FreeSWITCH scale-up/scale-down) actually run.
+
+The first load test run found 5 real dropped calls out of 10 - not noise, three distinct, confirmed bugs, all fixed:
+
+4. `environments/local/values.yaml`'s `dispatcher` list was a hardcoded pair of IPs (`10.244.3.35`, `10.244.3.36`) left over from before `dispatcher-sync` existed, still baked into Kamailio's dispatcher.list ConfigMap on every boot. Those pods had been gone for a long time; `ds_select_dst()` would still pick them on a fresh Kamailio restart, and calls sent there got a real `503` back (remapped to `500` by Kamailio's `tm` module) or no reply at all. Fixed: seed is now `dispatcher: []` - `dispatcher-sync` is the live source of truth and converges within one poll tick.
+5. That fix exposed a second, previously-latent bug in `config/dispatcher-sync/sync.py`: `dispatcher.list` returns an HTTP 500 ("No Destination Sets") when a group has no destinations yet - legitimate, not an error - but `current_dispatcher_ips()` treated any `dispatcher.list` failure as fatal and made `sync_target()` give up for the whole tick, including never calling `dispatcher.add`. With a static non-empty seed this never mattered (the set always existed); with an empty seed it deadlocked permanently. Fixed: that specific 500 is now treated as "current = empty set."
+6. The remaining failures were real `503`s from a single pod - a brand-new replica from the scale-up. `charts/freeswitch` had no `readinessProbe` (a gap [ADR 001](001-necessity-review.md) had already flagged but left unfixed), so Kubernetes marked it Ready, and `dispatcher-sync` added it, the instant the container started - before Sofia had bound its SIP socket. A call landing in that window got rejected. Fixed: a `readinessProbe` (`fs_cli -x "sofia status profile internal" | grep -q '^URL'`) now gates readiness on Sofia actually being up.
+
+Re-run 3 times after all three fixes: 30/30 calls succeeded, 0 failures.
+
+A real call recording (`test/sipp/call-recording-check.sh`, committed under `test/sipp/recordings/`) proves the full lifecycle - answer, real audio, hold (RTP gap confirmed in the packet trace), unhold, more real audio, hangup - with clean SIP headers throughout, against this fixed, `topos`-enabled stack.
+
 ## Open questions
 
-1. `topos` and its state store are proposed, not implemented — see ADR 003, pending a database-vs-Redis decision. Live-verified that the gap it's meant to close is real (see Verification above), not just a static-analysis finding.
-2. The interactive HTML diagrams (`docs/runtime-architecture.html`, `docs/e2e-call-verification.html`) still show the old rtpengine-based call path — they're generated output and weren't hand-edited here; they need regenerating separately.
-3. FreeSWITCH's pool sizing formula assumes no autoscaling yet (`maxReplicas` is just today's `replicas: 2`); once Phase 7 autoscaling lands, `maxReplicas` needs to track the real ceiling, not the current count.
-4. AC5 was only lightly verified (plain scale up/down, no pods in a call). A full SIPp load test with concurrent calls in flight during a scale/rollout event hasn't been run.
-5. The base FreeSWITCH image (`ghcr.io/patrickbaus/freeswitch-docker:1.11.3`) is `amd64`-only; on this arm64 lab it runs under emulation (`ctr images import --all-platforms` was needed to load it at all). Worth flagging for production node architecture planning, and as a reason to eventually pin an arm64-compatible image if production nodes are arm64 too.
+1. FreeSWITCH's pool sizing formula assumes no autoscaling yet (`maxReplicas` is just today's `replicas: 2`); once autoscaling lands, `maxReplicas` needs to track the real ceiling, not the current count.
+2. The base FreeSWITCH image (`ghcr.io/patrickbaus/freeswitch-docker:1.11.3`) is `amd64`-only; on this arm64 lab it runs under emulation (`ctr images import --all-platforms` was needed to load it at all). Kamailio's own base image, by contrast, has a native arm64 build. Worth flagging for production node architecture planning.
+3. `topos_htable` mappings don't survive a Kamailio restart or share across Kamailio A/B (the accepted tradeoff in ADR 003) - not exercised live (no restart-mid-call test run).
+4. The load test used 10 calls at 1/s with 2 scale events; a larger/sustained load profile hasn't been tried.

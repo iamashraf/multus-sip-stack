@@ -37,6 +37,18 @@ spec:
             preStop:
               exec:
                 command: ["/bin/sh", "/drain.sh"]
+          # Without this, the pod is marked Ready (and dispatcher-sync
+          # adds it) the instant the container starts, before Sofia has
+          # bound its SIP socket - a brand-new replica could then get a
+          # real call and reject it with a genuine 503. Confirmed live
+          # under a scale-up load test (ADR 002); ADR 001 had already
+          # flagged the missing probe as a defect.
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "fs_cli -x 'sofia status profile internal' 2>/dev/null | grep -q '^URL'"]
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            failureThreshold: 10
           volumeMounts:
             - name: vars
               mountPath: /etc/freeswitch/vars.xml.tmpl
