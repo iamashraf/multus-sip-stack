@@ -41,4 +41,5 @@ ffmpeg -i reverse.wav -af volumedetect -f null -
 
 - **"The call used for this proof" above predates ADR 002.** rtpengine has since been removed; those capture commands and the three-point capture (`eth0.pcap`/`net1.pcap` on an rtpengine pod that no longer exists) describe the old path and are kept as a historical record of how the original reverse-RTP bug was debugged, not a reproducible script. The committed, repeatable equivalent for the current (direct SBC-to-FreeSWITCH) path is `test/sipp/media-flow-check.sh`.
 - FreeSWITCH runs as a small, not-yet-HA-proven pool — none of this re-verifies HA under the new direct-media path yet.
-- `test/sipp/media-flow-check.sh` currently covers the echo extension (9196), not `demo_voice`.
+- `test/sipp/media-flow-check.sh` currently covers the echo extension (9196), not `demo_voice`. `test/sipp/call-recording-check.sh` does cover `demo_voice`, including a hold/unhold cycle, with a committed decoded-audio recording — see `test/sipp/recordings/`.
+- The SIP-header pod-IP leak this doc's address-hygiene check used to catch is now closed (Kamailio's `topos`/`topos_htable`, [ADR 003](adr/003-topos-state-store.md)) — `check-addresses.sh` passes clean on a current capture.
