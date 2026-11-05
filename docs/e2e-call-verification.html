@@ -5623,11 +5623,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot slate"></div>
-          <h3>Known gap, out of scope here</h3>
+          <div class="card-dot cyan"></div>
+          <h3>SIP headers clean too (topos, ADR 003)</h3>
         </div>
         <ul>
-          <li>SDP is clean, but SIP headers (Record-Route/Contact) still leak FreeSWITCH&#39;s pod-network IP — pre-existing, unrelated to media, pending Kamailio&#39;s topos module (dev-docs/adr/003-topos-state-store.md)</li>
+          <li>SDP was already clean, but SIP headers (Record-Route/Contact) used to leak FreeSWITCH&#39;s pod-network IP — fixed with Kamailio&#39;s topos + topos_htable, live-verified on this same call path (dev-docs/adr/003-topos-state-store.md)</li>
         </ul>
       </div>
     </div>

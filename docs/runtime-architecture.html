@@ -5608,12 +5608,12 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
       <div class="card">
         <div class="card-header">
-          <div class="card-dot slate"></div>
-          <h3>Known gap: SIP header leak (pending topos)</h3>
+          <div class="card-dot cyan"></div>
+          <h3>SIP header leak closed (topos, ADR 003)</h3>
         </div>
         <ul>
-          <li>SDP is clean, but FreeSWITCH&#39;s pod-network IP still leaks into SIP headers (Record-Route/Contact) — a pre-existing gap, not caused by removing rtpengine</li>
-          <li>Fix proposed but not implemented yet: Kamailio&#39;s topos module, pending a database-vs-Redis-vs-htable decision for its state store (dev-docs/adr/003-topos-state-store.md)</li>
+          <li>Kamailio previously leaked FreeSWITCH&#39;s pod-network IP into SIP headers (Record-Route/Contact) even though SDP was already clean — a pre-existing gap, not caused by removing rtpengine</li>
+          <li>Fixed with topos + topos_htable (in-memory, no new infrastructure) — live-verified clean on a real call, including through a hold/unhold re-INVITE</li>
         </ul>
       </div>
     </div>
