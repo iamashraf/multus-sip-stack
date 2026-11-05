@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# Attaches the kind-managed edge worker containers to the "voice" network.
+# Attaches the kind-managed voice worker containers to the "voice" network.
 # The network itself (and the sbc container) is owned by compose.yaml -
 # `podman compose up` must run first. kind manages its own node containers,
 # so they can't be declared in compose.yaml; this script is what bridges
-# the two.
+# the two. All three workers need this now: FreeSWITCH anchors media
+# directly with the SBC over net1 (see ADR 002), not just Kamailio.
 set -euo pipefail
 
 NETWORK=voice
-EDGE_NODES=(voice-lab-worker voice-lab-worker2)
+VOICE_NODES=(voice-lab-worker voice-lab-worker2 voice-lab-worker3)
 
 connect_edges() {
-  for node in "${EDGE_NODES[@]}"; do
+  for node in "${VOICE_NODES[@]}"; do
     connect "$node"
   done
 }
@@ -33,13 +34,13 @@ disconnect() {
 }
 
 disconnect_edges() {
-  for node in "${EDGE_NODES[@]}"; do
+  for node in "${VOICE_NODES[@]}"; do
     disconnect "$node"
   done
 }
 
 verify() {
-  for node in "${EDGE_NODES[@]}"; do
+  for node in "${VOICE_NODES[@]}"; do
     echo "--- $node ---"
     podman exec "$node" ip -4 addr show eth1
   done

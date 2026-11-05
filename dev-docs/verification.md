@@ -6,7 +6,7 @@ How the stack is actually proven to work, not just assumed to. A successful SIP 
 
 ## What "verified" means here
 
-- **Signaling succeeding is not enough.** `test/sipp/media-flow-check.sh` plays a real recording through the whole stack and confirms RTP actually reaches rtpengine's voice-VLAN address.
+- **Signaling succeeding is not enough.** `test/sipp/media-flow-check.sh` plays a real recording through the stack and confirms RTP actually reaches FreeSWITCH's voice-VLAN address directly (no relay in between - see ADR 002).
 - **Media has to be captured from a real endpoint.** `local/capture.sh` runs `tcpdump` inside the SBC container itself. A bystander container on the same bridge only sees broadcast/multicast traffic — unicast between two other hosts (e.g. the SBC and a Kamailio pod) isn't flooded to a third port, by normal switch/CNI behavior, not a bug.
 - **No pod-network IP may leak into SIP or SDP.** `local/check-addresses.sh <pcap>` reads pod CIDRs live from the cluster and fails if any of them show up in a capture's SIP/SDP payload.
 - **Audio has to decode to something audible, not just "packets arrived."** Extract the RTP payload with `tshark`, decode it with `ffmpeg`, then run `ffmpeg -af volumedetect` on the result — a real signal shows a mean volume well above silence (around -31 dB in the calls run here), not near -inf.
@@ -39,5 +39,6 @@ ffmpeg -i reverse.wav -af volumedetect -f null -
 
 ## Known gaps
 
-- rtpengine runs as a single, unreplicated pod — none of this verifies HA, because there isn't any yet (see the README's note on this).
-- The capture commands above are what was actually run during debugging, not a packaged test; `test/sipp/media-flow-check.sh` is the one committed, repeatable script and currently covers the echo extension (9196), not `demo_voice`.
+- **"The call used for this proof" above predates ADR 002.** rtpengine has since been removed; those capture commands and the three-point capture (`eth0.pcap`/`net1.pcap` on an rtpengine pod that no longer exists) describe the old path and are kept as a historical record of how the original reverse-RTP bug was debugged, not a reproducible script. The committed, repeatable equivalent for the current (direct SBC-to-FreeSWITCH) path is `test/sipp/media-flow-check.sh`.
+- FreeSWITCH runs as a small, not-yet-HA-proven pool — none of this re-verifies HA under the new direct-media path yet.
+- `test/sipp/media-flow-check.sh` currently covers the echo extension (9196), not `demo_voice`.

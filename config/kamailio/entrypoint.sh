@@ -9,7 +9,6 @@ ETH0_IP=$(ip -4 -o addr show eth0 | awk '{print $4}' | cut -d/ -f1)
 sed \
   -e "s/__NET1_IP__/${NET1_IP}/g" \
   -e "s/__ETH0_IP__/${ETH0_IP}/g" \
-  -e "s/__RTPENGINE_HOST__/${RTPENGINE_HOST}/g" \
   /etc/kamailio/kamailio.cfg.tmpl > /etc/kamailio/kamailio.cfg
 
 exec kamailio -f /etc/kamailio/kamailio.cfg -DD -E

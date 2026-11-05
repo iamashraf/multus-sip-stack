@@ -6,7 +6,10 @@ voiceNetwork:
   subnet: ""                 # set per environment
   routes: []                 # SBC-subnet routes via the VLAN gateway - set per environment
 
-rtpengine:
+freeswitch:
   pool:
     rangeStart: ""   # set per environment - allocatable sub-range within voiceNetwork.subnet
     rangeEnd: ""
+  maxReplicas: 1       # set per environment - FreeSWITCH's max replica count (replicas.max once autoscaling exists)
+  maxSurge: 1          # set per environment - must match the FreeSWITCH Deployment's rollout maxSurge
+  poolHeadroom: 2      # set per environment - spare addresses for pods mid-terminate/mid-reschedule

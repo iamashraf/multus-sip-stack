@@ -11,8 +11,8 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "voice-role=edge"
-            register-with-taints: "voice-edge=true:NoSchedule"
+            node-labels: "voice-role=voice"
+            register-with-taints: "voice-node=true:NoSchedule"
   - role: worker
     image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
     kubeadmConfigPatches:
@@ -20,8 +20,8 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "voice-role=edge"
-            register-with-taints: "voice-edge=true:NoSchedule"
+            node-labels: "voice-role=voice"
+            register-with-taints: "voice-node=true:NoSchedule"
   - role: worker
     image: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
     kubeadmConfigPatches:
@@ -29,4 +29,5 @@ nodes:
         kind: JoinConfiguration
         nodeRegistration:
           kubeletExtraArgs:
-            node-labels: "voice-role=media"
+            node-labels: "voice-role=voice"
+            register-with-taints: "voice-node=true:NoSchedule"

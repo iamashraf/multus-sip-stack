@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-# Address hygiene check: fails if any pod-network IP appears in SIP or SDP
-# inside a capture taken by capture.sh. Pod CIDRs are read live from the
-# cluster, never hardcoded, since kindnet's default can change.
+# Address hygiene check: fails if any pod-network IP appears anywhere in a
+# SIP or SDP message - headers (Via, Record-Route, Contact) included, not
+# just the SDP body. An earlier version only scanned sip.msg_body (the SDP),
+# which let pod-network IPs in SIP headers pass silently - see ADR
+# 001-necessity-review.md's "defects found along the way". Pod CIDRs are
+# read live from the cluster, never hardcoded, since kindnet's default can
+# change.
 set -euo pipefail
 
 PCAP=${1:?usage: check-addresses.sh <pcap-file>}
@@ -13,8 +17,10 @@ if [[ -z "$PODCIDRS" ]]; then
   exit 1
 fi
 
+# -V decodes the full message (every SIP header plus the SDP body as text),
+# not just one field - sip.msg_body alone misses header leaks.
 TEXT=$(podman run --rm -v "$(dirname "$(realpath "$PCAP")"):/in" "$NETSHOOT" \
-  tshark -r "/in/$(basename "$PCAP")" -Y 'sip || sdp' -T fields -e sip.msg_body 2>/dev/null || true)
+  tshark -r "/in/$(basename "$PCAP")" -Y 'sip || sdp' -V 2>/dev/null || true)
 
 fail=0
 while IFS= read -r cidr; do

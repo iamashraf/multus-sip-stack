@@ -1,0 +1,230 @@
+# ADR 001: Necessity review (Step 1 of the media-path addendum)
+
+Status: proposed, awaiting decisions below.
+
+This reviews every component in the repo or the build-order plan against what it actually does, backed by what's in the repo today, not what the architecture doc aspires to. Written before any code or chart changes, per the addendum.
+
+Written by `dev-docs/adr/`, the location `dev-docs/architecture.md:101` already names for ADRs. The addendum asked for `docs/adr/`; `docs/` in this repo only holds the published HTML diagrams, so this file lives here instead.
+
+## Summary
+
+| Component | Verdict | Why |
+|---|---|---|
+| Multus | Required | Only way to give a pod a second, real voice-VLAN IP without `hostNetwork` |
+| Whereabouts | Required | Pooled NAD needs cluster-aware IPAM; already caused one real outage from a too-narrow range |
+| ipvlan vs macvlan | Conditional | Picked per-environment; production choice depends on switch MAC-per-port support, unconfirmed |
+| Static IPAM for Kamailio | Required | SBC needs a stable IP to whitelist across restarts |
+| Kamailio | Required | Removing it re-opens the "hand-edited dispatcher list" problem the project exists to close |
+| Two Kamailio instances | Required | Single instance is a signaling SPOF; also surfaced a real rollout bug (below) |
+| Dispatcher sync (sync.py vs operator) | One Required, one Remove | Both do the identical job and both template the same Service name; pick one |
+| rtpengine | Conditional | Required under today's design; becomes optional once FreeSWITCH gets `net1`, matching the addendum |
+| Kamailio `topos` + state store | Required | Verified today: pod IPs already leak into SIP headers the SBC sees |
+| Operator CRDs + mutating webhook | Remove | Never built; the thing the plan credited to them is done by a Multus annotation instead |
+| KEDA / custom-metrics autoscaling | Nice to have | Not built; no acceptance criterion needs automatic scaling |
+| Prometheus / Grafana / OpenTelemetry | Nice to have (keep existing metrics) | Only a bare metrics endpoint exists; no server, dashboard, or tracing anywhere |
+| PodDisruptionBudgets | Required (real nodes) | Drain script and grace period exist and work; PDB itself doesn't exist yet |
+| Node taints/labels, edge vs media pools | Required | Already load-bearing; becomes mandatory the moment FreeSWITCH needs `net1` too |
+| Canal vs Calico BGP | Remove from this addendum's scope | Already deferred to its own ADR; moot once media never touches the pod network |
+| MetalLB / any load balancer | Remove | Not present, not referenced, actively contradicts the "no L4 LB for SIP" design note |
+
+## Multus
+
+- **Purpose**: lets Kamailio and rtpengine pods carry a second NIC on the voice VLAN while staying ordinary, schedulable pods on the pod network.
+- **Challenge it solves**: Services, kube-proxy, and overlay NAT can't carry SIP/SDP (addresses live in the payload, not just headers) — see `README.md` and `dev-docs/architecture.md`'s "why standard Kubernetes patterns don't work here".
+- **What breaks without it**: no way to put a real voice-VLAN IP on a pod except `hostNetwork`, which ties the IP to a node, allows one instance per node, and needs privileged networking — all three violate design principle 3.
+- **Alternatives**: `hostNetwork` (rejected above); SR-IOV (not evaluated, noted as a future-only option in architecture.md's non-goals); Calico BGP making pod IPs directly routable (removes Multus entirely — see the Canal/Calico row).
+- **Cost**: a DaemonSet, plus copying macvlan/ipvlan/static CNI binaries onto every node that needs them (`local/addons.sh`), plus one more annotation convention to keep consistent across charts.
+- **Verdict**: Required, as long as voice-VLAN pods stay separate from the general pod network.
+- **Evidence**: `local/addons.sh` installs it; every voice NAD (`charts/voice-network/templates/nad-*.yaml`) depends on it; it's load-bearing today, not speculative.
+
+## Whereabouts
+
+- **Purpose**: cluster-wide IPAM for the pooled voice NAD, so two pods on different nodes never get handed the same IP.
+- **Challenge it solves**: Multus's own `static` IPAM only fits a single fixed IP (used for Kamailio); a pool needs allocation that's safe across the whole cluster.
+- **What breaks without it**: hand-rolling pool allocation means re-implementing Whereabouts' own cross-node locking, which is more code, not less.
+- **Alternatives**: `do nothing`/host-local IPAM (not cluster-aware, duplicate IPs across nodes); hand-maintained static list per pod (doesn't scale with replica count).
+- **Cost**: two more CRDs and a reconciler Deployment (`local/addons.sh`); a pool that can be mis-sized.
+- **Verdict**: Required for any pooled voice-VLAN pod (rtpengine today, FreeSWITCH's `net1` under the new design).
+- **Evidence**: `charts/voice-network/templates/nad-pool.yaml:15` (`"type": "whereabouts"`); `environments/local/values.yaml:28-36` documents a real incident where a too-narrow range gave rtpengine the wrong subnet mask and broke reverse media — not a hypothetical cost.
+
+## ipvlan vs macvlan
+
+- **Purpose**: the Linux interface mode the voice NAD uses.
+- **Challenge it solves**: whether the physical switch allows multiple MAC addresses per port.
+- **What breaks without picking correctly**: macvlan on a switch enforcing one MAC per port gets the interface's traffic dropped or the port disabled.
+- **Alternatives**: ipvlan (shares the parent's MAC, works even when the switch restricts MACs per port — the stated production default); macvlan (used locally only because the Podman bridge has no such limit).
+- **Cost**: none beyond a values flag; already implemented as a ternary in the NAD template.
+- **Verdict**: Conditional — a choice must be made, but which one is correct for production is unverified until the network team confirms switch behavior.
+- **Evidence**: `charts/voice-network/templates/nad-pool.yaml:1`; `dev-docs/prerequisites.md` checklist item asking the network team this exact question.
+
+## Static IPAM for Kamailio
+
+- **Purpose**: a fixed `net1` IP per Kamailio instance, stable across restarts, for the SBC to whitelist.
+- **Challenge it solves**: SBC trust models are usually IP-based; a Kamailio IP that changes on every pod restart means updating the SBC's config out of band every time.
+- **What breaks without it**: the SBC either has to be reconfigured on every Kamailio restart, or has to trust a wider range than one specific dispatcher, weakening its own ACL.
+- **Alternatives**: a rotating pool of signaling IPs (loses the "one whitelisted address" property); DNS-based SBC trust (uncommon, unverified for the SBC model in use here).
+- **Cost**: one static NAD plus a per-instance `ips` annotation; low, since it's one fixed value per Deployment, not a pool.
+- **Verdict**: Required.
+- **Evidence**: `charts/kamailio/templates/deployment.yaml:18`; `dev-docs/prerequisites.md` "Static IP for each Kamailio instance."
+
+## Kamailio itself
+
+- **Purpose**: SIP dispatch to a FreeSWITCH pool, Record-Route so in-dialog requests keep passing through it, and (today) a target for the dispatcher-sync mechanism that keeps membership current.
+- **Challenge it solves**: could the SBC dispatch to FreeSWITCH directly? That needs the SBC itself to track Kubernetes-driven, constantly-changing FreeSWITCH pod membership and keep in-dialog requests sticky across that churn — almost no SBC does this natively; most work off a static or DNS-resolved backend list.
+- **What breaks without it**: the SBC falls back to a static or hand-maintained FreeSWITCH address list. That's exactly the "hand-edited dispatcher list" gap `dev-docs/architecture.md:73` says this project exists to close, and it directly contradicts design principle 6 ("membership derives from Kubernetes, never a hand-edited list").
+- **Alternatives**: "do nothing" (static list on the SBC, loses dynamic membership); teach the SBC to watch Kubernetes (outside this project's control, called out in the addendum as "we don't control these").
+- **Cost**: two Deployments, config templating, and now a topology-hiding layer and state store on top.
+- **Verdict**: Required.
+- **Evidence**: `dev-docs/architecture.md:50,73`; both dispatcher-sync and dispatcher-operator exist specifically to serve Kamailio's dispatcher list, nothing else.
+
+## Two Kamailio instances vs one
+
+- **Purpose**: redundant SIP signaling entry points, so the SBC has a second endpoint if one is unreachable.
+- **Challenge it solves**: a single static-IP pod is a hard single point of failure for all new calls.
+- **What breaks without it**: one instance down (node issue, pod crash, or any rolling update) blacks out new call signaling until it's rescheduled — and rescheduling itself is slower than a stateless pod because the static IP and its NAD have to reattach.
+- **A concrete defect this surfaced, not hypothetical**: `charts/kamailio/templates/deployment.yaml` sets no `strategy:` and `replicas: 1` per instance, so the Deployment default (`RollingUpdate`, `maxSurge: 25%` rounds up to 1 pod) will briefly try to run two pods both requesting the same static `net1` IP from the same `voice-static` NAD during any rollout. This needs `strategy.type: Recreate` regardless of this addendum's decisions — noted here, not fixed here.
+- **Alternatives**: one instance plus fast rescheduling (accepts an outage window on every disruption); one instance behind a floating/VRRP IP (a different kind of complexity, not evaluated).
+- **Cost**: doubles the static-IP footprint and the number of targets every dispatcher-sync mechanism has to write to.
+- **Verdict**: Required, for the stated HA goal.
+- **Evidence**: `charts/kamailio/values.yaml` (`kamailio-a`, `kamailio-b`); `charts/kamailio/templates/deployment.yaml` (no `strategy:`, same static IP annotation reused every rollout).
+
+## Dispatcher sync: sync.py vs the operator
+
+Correction to the addendum's framing: `config/dispatcher-sync/sync.py` is not a sidecar. It is its own Deployment (`charts/dispatcher-sync`), reusing the Kamailio image.
+
+Both `dispatcher-sync` and `dispatcher-operator` exist in the repo right now and do the identical job: read FreeSWITCH's EndpointSlice, reconcile both Kamailio instances' live dispatcher sets against it. Both chart templates create an identical headless `freeswitch` Service for the same reason — they cannot both be installed into the same namespace without a name collision.
+
+| | `dispatcher-sync` | `dispatcher-operator` |
+|---|---|---|
+| Language/runtime | Python stdlib, reuses the kamailio image | Go, controller-runtime, its own image |
+| Reaction | 3s poll | EndpointSlice watch + 5s resync fallback |
+| Metrics | none | 3 Prometheus metrics |
+| RBAC | implicit (same SA as kamailio pods) | dedicated Role scoped to one namespace, no ClusterRole |
+| Status | documented and live-verified in `architecture.md:71-97`; not wired into `local/Makefile` | just merged; two of the last four commits are hardening fixes to it (periodic resync, namespace-scoped cache) |
+
+- **Challenge it solves**: same as Kamailio's row above — "hand-edited dispatcher list."
+- **What breaks without either**: covered under Kamailio's row.
+- **Alternatives**: push this logic into a Kamailio module directly (more code, not evaluated); keep both and rename one (does not solve the Service name collision).
+- **Cost**: the operator is the heavier artifact (extra Go module, image, Chart, RBAC, Go test suite) but is event-driven and has metrics; `sync.py` is lighter (no new image) but polls and has no observability.
+- **Verdict**: one Required, one Remove. Recommendation, not a decision made here: keep `dispatcher-operator` — it reacts faster, already has metrics (principle 8), and is the one actively being hardened — and remove `dispatcher-sync`. This is flagged as a decision for the user below, not decided unilaterally.
+- **Evidence**: `charts/dispatcher-sync/templates/freeswitch-service.yaml` and `charts/dispatcher-operator/templates/freeswitch-service.yaml` (identical purpose); git log (`697df0b`, `acb857a` are operator hardening commits); `local/Makefile` wires neither chart in yet, so this collision hasn't been hit in CI, only inspected here.
+
+## rtpengine
+
+- **Purpose today**: anchors RTP between `net1` (SBC-facing) and `eth0` (cluster-facing), and gives Kamailio's `rtpengine_manage()` calls somewhere to rewrite SDP so FreeSWITCH's pod IP never appears in it.
+- **Challenge it solves**: as the addendum argues, this duplicates the SBC's own job once FreeSWITCH can anchor media itself. But under today's design, before FreeSWITCH has `net1`, it is the only thing stopping FreeSWITCH's pod IP from leaking into SDP — `config/kamailio/kamailio.cfg.tmpl:107-109` says this explicitly in its own comment, and every `local/demo-call*.pcap` capture confirms FreeSWITCH's pod IP appears only in SIP headers, not in SDP, because of it.
+- **What breaks without it (today's design)**: FreeSWITCH's pod-network IP leaks straight into SDP, the exact failure this project exists to prevent.
+- **What breaks without it (addendum's design, FreeSWITCH on `net1`)**: nothing — SDP already carries FreeSWITCH's own voice-VLAN IP, so rtpengine has no SDP left to rewrite for the primary call path.
+- **Alternatives**: SBC-direct to FreeSWITCH (the addendum's proposal); routable pod IPs via Calico BGP (a bigger architecture change, not evaluated here, already deferred).
+- **Cost, as actually built, corrected against the addendum's premise**: one replica today, no `strategy:` set either (same SPOF-on-rollout risk as Kamailio, not yet flagged anywhere else). The addendum states rtpengine's in-kernel forwarding "needs a host kernel module and extra privileges" — that is not true of what's deployed here. `config/rtpengine/entrypoint.sh` runs plain userspace forwarding (no `--table`, no kernel module setup), and `charts/rtpengine/templates/deployment.yaml` sets no `securityContext`, no added capabilities, no privileged flag. That cost is real only if in-kernel offload is adopted later, not for the code in this repo today.
+- **Verdict**: Conditional. Required under the current design (pre-addendum); the addendum's own plan to disable it by default once FreeSWITCH owns `net1` is consistent with what's in the repo, not contradicted by it.
+- **Evidence**: `config/kamailio/kamailio.cfg.tmpl:107-109`; `local/demo-call3.pcap` (and 4, 5): SDP never carries `10.244.*`; `config/rtpengine/entrypoint.sh`; `charts/rtpengine/templates/deployment.yaml`.
+
+## Kamailio `topos` + its state store
+
+- **Purpose**: hide every internal address from the SBC, so Record-Route, Via, and Contact headers it sees only ever carry Kamailio's own address.
+- **Challenge it solves**: acceptance criterion 3 of this addendum ("address, interface and DSCP checks all pass" — SIP headers seen by the SBC must contain only Kamailio's IP).
+- **What breaks without it — verified, not reasoned**: running `strings local/demo-call3.pcap | grep '10\.244\.'` (same for `demo-call4.pcap`, `demo-call5.pcap`, `rtp-debug-sbc.pcap`) shows pod-network IPs already present in SIP headers today:
+  - `Record-Route: <sip:10.244.1.31;...>` — Kamailio's own `eth0` pod IP, doubled into a second Record-Route because `kamailio.cfg.tmpl`'s `force_send_socket()` makes the inbound and outbound socket differ, which the `rr` module reacts to by default.
+  - `Contact: <sip:9199@10.244.3.35:5060;...>` and a matching `Via:` — FreeSWITCH's pod IP. This doesn't depend on the media-path change at all, since FreeSWITCH's `sip-ip` stays on `eth0` either way (`config/freeswitch/internal.xml:102`).
+  - `local/check-addresses.sh:17` only extracts `sip.msg_body` (the SDP) from the capture, never the headers above — so this leak passes the project's own existing check today. That's a real test gap in the current repo, independent of this addendum.
+- **Alternatives**: hand-rewrite headers directly in `kamailio.cfg` (reimplements what `topos` already does, more code and more places to get it wrong); do nothing (fails AC3, with evidence above, not speculation).
+- **Cost**: a state store (database or Redis) to hold topology-hiding mappings across Kamailio A/B and restarts.
+- **Verdict**: Required, independent of the media-path decision — this is a pre-existing gap the addendum happens to also need closed.
+- **Evidence**: pcap greps above; `local/check-addresses.sh:17`; `config/kamailio/kamailio.cfg.tmpl` `force_send_socket()` usage.
+
+## The operator, CRDs, and mutating webhook (as planned in Phase 6)
+
+- **Purpose as planned** (`dev-docs/architecture.md` build-order table): "Kamailio pod restarts keep its static IP; membership stays in sync with no sidecar."
+- **What was actually built** (`config/dispatcher-operator`): a plain `controller-runtime` manager with one `Reconciler` watching `EndpointSlice` objects. No `CustomResourceDefinition` and no admission or mutating webhook exist anywhere in the repo — confirmed by grep, not inferred from naming.
+- **What breaks without the CRD/webhook portion**: nothing — the thing the plan credited to the operator, "restarts keep the static IP," is actually done by the Multus `ips` annotation directly on the Kamailio Deployment (`charts/kamailio/templates/deployment.yaml:18`), which has nothing to do with the operator.
+- **Alternatives**: build the CRD/webhook as originally planned (no identified need now that the annotation already covers the stated goal).
+- **Cost of building it anyway**: an admission webhook needs a cert, a `ValidatingWebhookConfiguration`/`MutatingWebhookConfiguration`, and a TLS-serving endpoint — meaningful ops surface for a goal that's already met.
+- **Verdict**: Remove from the plan. What was actually built (the reconciler) stands on its own merits under the dispatcher-sync row above; the CRD/webhook portion was never built and nothing currently needs it.
+- **Evidence**: `grep -rni "mutatingwebhook\|crd\b"` across the whole repo returns nothing; `charts/kamailio/templates/deployment.yaml:18`.
+
+## KEDA or custom-metrics autoscaling
+
+- **Purpose as planned**: autoscale FreeSWITCH on active channels/CPS instead of CPU (principle 7, Phase 7).
+- **What's actually in the repo**: nothing. No KEDA manifests, no custom-metrics adapter, no `HorizontalPodAutoscaler` object anywhere (grep empty).
+- **What breaks without it**: nothing against this addendum's acceptance criteria — AC4 ("scale and rolling update during load: zero dropped calls") can be exercised with a manual `kubectl scale` during a SIPp load run; the criterion is about not dropping calls during scaling, not about scaling being automatic.
+- **Alternatives**: manual scaling (adequate for a first release); plain CPU-based HPA (explicitly rejected by principle 7, since CPU is a stated poor proxy for call load).
+- **Cost**: KEDA is a second autoscaling control plane, and it would need a channel-count metrics source that doesn't exist yet either.
+- **Verdict**: Nice to have — defer.
+- **Evidence**: grep for "keda" across the repo returns nothing; AC4's wording does not require automation.
+
+## OpenTelemetry, Prometheus, Grafana
+
+- **Purpose as planned**: per-component metrics and SIP/RTP quality tracing (principle 8, Phase 7).
+- **What's actually built**: `dispatcher-operator` links `prometheus/client_golang` and exposes three counters/gauges on its own metrics endpoint (`charts/dispatcher-operator/templates/metrics-service.yaml`). That is the entire footprint. No Prometheus server, no `ServiceMonitor`, no Grafana dashboard, no OpenTelemetry collector or instrumentation exists anywhere else (grep empty).
+- **What breaks without the rest**: nothing acceptance-critical in this addendum — AC5 ("`make quality` shows jitter, loss and MOS") is satisfied by reading FreeSWITCH's own call variables into `quality.json`, which needs none of Prometheus, Grafana, or OpenTelemetry.
+- **Alternatives**: keep the one metrics endpoint already written (free); stand up a real Prometheus+Grafana stack only once there's an actual dashboard consumer for it.
+- **Cost**: a Prometheus server, scrape config, Grafana, and dashboards-as-code is real ongoing ops surface for a project with one environment running so far.
+- **Verdict**: keep what's built (the operator's metrics endpoint, already written and cheap); the rest is Nice to have — defer.
+- **Evidence**: grep for prometheus/grafana/opentelemetry outside the operator's own code returns nothing; AC5 doesn't require any of it.
+
+## PodDisruptionBudgets, drain scripts, long termination grace periods
+
+These are three different things with three different states in the repo; splitting them:
+
+- **Drain script — built and verified.** `config/freeswitch/drain.sh` is a real `preStop` hook: it marks the pod inactive (`dispatcher.set_state`) in both Kamailio instances by RPC, then polls `fs_cli "show calls count"` until it hits 0 or `DRAIN_TIMEOUT` expires. This directly serves AC4. Verdict: Required. Evidence: the script itself; wired in via `charts/freeswitch/templates/deployment.yaml:28-31`.
+- **Termination grace period — built, but its value needs re-deriving for production.** The drain script's own comment says `terminationGracePeriodSeconds` must exceed `DRAIN_TIMEOUT` or Kubernetes kills the pod anyway. Locally it's 60s vs a 50s drain timeout — both lab-sized placeholders per `charts/freeswitch/values.yaml`'s own comment, not production values. Verdict: Required, value needs setting from the real maximum call duration FreeSWITCH is told to drain for, not copied from the lab.
+- **PodDisruptionBudget — not built.** No `PodDisruptionBudget` object exists for Kamailio, rtpengine, or FreeSWITCH (grep empty). What breaks without one: a voluntary eviction (node drain for RKE2 upgrades, cluster-autoscaler scale-down) can take out more FreeSWITCH pods at once, or evict whichever Kamailio instance happens to be touched, with none of the "no more than N at a time" protection a PDB gives — that's a different failure path than the `Deployment`'s own `maxUnavailable`, which doesn't apply to node-drain-initiated eviction at all. Verdict: Required once this runs on real nodes that get drained for maintenance; Nice to have for the kind lab, which doesn't drain nodes today.
+- **Evidence**: `config/freeswitch/drain.sh`; `charts/freeswitch/values.yaml:4-8`; grep for "poddisruptionbudget" across the repo is empty.
+
+## Node taints and labels, separate edge vs media pools
+
+- **Purpose**: keep voice-VLAN-attached pods off nodes without the VLAN NIC, and vice versa.
+- **What's built today**: `voice-edge=true:NoSchedule` taint + `voice-role: edge` label, consumed by Kamailio and rtpengine's `nodeSelector`/`tolerations`. FreeSWITCH already uses a *different* `nodeSelector: voice-role: media` (`charts/freeswitch/templates/deployment.yaml:17-18`) with no matching taint/toleration anywhere — it's already on a separate labeled pool today, just not one reserved by a taint.
+- **Challenge it solves**: once FreeSWITCH also needs the voice VLAN NIC (this addendum's own change), any node lacking that NIC simply cannot run it — this stops being a scheduling nicety and becomes a hard requirement.
+- **What breaks without it**: FreeSWITCH pods land on nodes with no `net1`, and the startup check the addendum proposes (verifying `net1` exists) would fail on every one of them.
+- **Alternatives**: one shared pool for every node (only works if every node in the cluster has the voice VLAN NIC, defeating the point of a limited voice VLAN footprint).
+- **Cost**: one more label/taint pair; renaming the media pool to the addendum's "voice nodes" concept.
+- **Verdict**: Required, and becomes mandatory the moment FreeSWITCH needs `net1`.
+- **Evidence**: `charts/freeswitch/templates/deployment.yaml:17-18`; `charts/kamailio/templates/deployment.yaml:20-24`; `charts/rtpengine/templates/deployment.yaml:18-23`; `dev-docs/prerequisites.md` edge node count checklist item.
+
+## Canal as primary CNI vs Calico BGP
+
+- **Purpose**: general pod networking.
+- **Challenge it raises**: could pod IPs become routable on the voice VLAN via Calico BGP, removing Multus/Whereabouts/rtpengine entirely?
+- **What breaks without evaluating this now**: nothing against any current acceptance criterion. Once FreeSWITCH owns a `net1` IP directly (this addendum's own change), no voice traffic crosses the pod network at all, so the CNI choice stops mattering to the call path either way.
+- **Alternatives**: Canal (current, RKE2 default, no action needed); Calico BGP (means exposing the whole pod CIDR to the voice VLAN's router — a materially different trust boundary that the network team hasn't signed off on).
+- **Cost**: `dev-docs/prerequisites.md:27` already flags a CNI migration on an existing cluster as "a separate, riskier change"; `dev-docs/architecture.md:103` already deferred this exact question to its own ADR.
+- **Verdict**: Remove from this addendum's scope — already deferred, and now also moot for the reason above.
+- **Evidence**: `dev-docs/architecture.md:103`; `dev-docs/prerequisites.md:27`; the addendum's own media-path change removes the dependency on this question.
+
+## MetalLB or any load balancer
+
+- **Purpose it would serve**: none found.
+- **What's in the repo**: no mention of MetalLB anywhere (grep empty); every Service in every chart is `ClusterIP` or headless (`clusterIP: None`) — none are `LoadBalancer` typed.
+- **What breaks without it**: nothing; it isn't used.
+- **Alternatives**: n/a.
+- **Cost**: n/a.
+- **Verdict**: Remove — not present, and the architecture doc's own "why standard Kubernetes patterns don't work here" section explicitly argues against an L4 load balancer for SIP (breaks server-initiated SIP such as re-INVITE/BYE/OPTIONS).
+- **Evidence**: grep empty; `dev-docs/architecture.md`'s L4 LB bullet; every `charts/*/templates/*service*.yaml` checked.
+
+## Defects found along the way (not components, worth recording now)
+
+These surfaced while gathering evidence above. Not fixed here, per the addendum's "do Step 1 first, stop" instruction.
+
+1. **Kamailio's rollout can collide on its own static IP.** No `strategy:` is set on `charts/kamailio/templates/deployment.yaml`; a default `RollingUpdate` will try to run two pods against the same `voice-static` NAD IP during any update. Needs `strategy.type: Recreate`.
+2. **`local/check-addresses.sh` doesn't check SIP headers, only SDP.** It extracts `sip.msg_body` only, so the Record-Route/Contact/Via leaks documented above pass today's check silently. The addendum's Step 4 "address check" needs to explicitly cover headers, not assume the existing script already does.
+3. **FreeSWITCH has no readiness probe.** Both `dispatcher-sync` (`sync.py:48`, defaults `ready` to `True` when absent) and `dispatcher-operator` (`freeswitch_reconciler.go:96`, same default) treat a missing `ready` condition as ready. A new FreeSWITCH pod can be added to the dispatcher before SIP is actually listening — already noted as a known gap in `dev-docs/architecture.md:96-97`, repeated here because it threatens this addendum's AC4 just as much as the original phase's acceptance criteria.
+4. **rtpengine has the same single-instance rollout exposure as Kamailio** (no `strategy:`, `replicas: 1`), just without a static IP to collide over. Lower severity, same shape.
+
+## Summary
+
+**Minimum viable set that still meets every acceptance criterion in this addendum:**
+Multus, Whereabouts, one of ipvlan/macvlan (environment-decided), static IPAM NAD, both Kamailio instances with `topos` and a state store, one dispatcher sync mechanism (operator or sync.py, not both), FreeSWITCH with `net1` plus its existing drain script and a correctly-sized grace period, node taints/labels covering both edge and voice-node pools, the rtpengine chart kept but `enabled: false` by default, and the address/interface/DSCP/quality tooling from Step 4 (new work).
+
+**What to cut for a first production release:** KEDA/custom-metrics autoscaling, a real Prometheus server plus Grafana plus OpenTelemetry (keep the one metrics endpoint already written), the Calico BGP question (moot once FreeSWITCH has `net1`), and PodDisruptionBudgets can wait specifically for the kind lab but not for the first real-node rollout.
+
+**Pure nice-to-have, already in the repo, defensible to call out bluntly:** one of the two dispatcher-sync implementations is redundant with the other and should be removed; the CRD/mutating-webhook portion of the Phase 6 plan was never built and nothing needs it; MetalLB was never present and isn't needed.
+
+## Decisions made (updated after this review)
+
+1. **Dispatcher sync**: `dispatcher-sync` (Python) kept; `dispatcher-operator` (Go) removed — the reverse of this document's original recommendation, per the user's explicit choice. `charts/dispatcher-operator` and `config/dispatcher-operator` are deleted.
+2. **Path**: `dev-docs/adr/` confirmed as the right location (matches `dev-docs/architecture.md:101`'s existing convention); this file's numbering stands.
+3. **rtpengine**: removed entirely (not just disabled by default) — see [ADR 002](002-remove-rtpengine.md).
+4. **topos**: confirmed required, proposed for implementation, but not yet added — the state-store choice is written up in [ADR 003](003-topos-state-store.md), awaiting a decision before the `topos` module itself is wired into `kamailio.cfg.tmpl`.
+5. **Canal vs Calico BGP**: left as a deferred, lower-priority ADR in `dev-docs/architecture.md` — moot for the call path now that FreeSWITCH owns `net1` directly either way.

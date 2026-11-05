@@ -11,6 +11,10 @@ voiceNetwork:
 sbc:
   ip: 192.168.50.5
 
+# charts/freeswitch - entrypoint.sh fails fast unless this routes via net1.
+# The fake SBC uses one IP for SIP and RTP locally, so this reuses sbc.ip.
+sbcMediaIP: 192.168.50.5
+
 # charts/kamailio - one Deployment per instance, each with its own static net1 IP.
 instances:
   - name: kamailio-a
@@ -24,13 +28,18 @@ dispatcher:
   - 10.244.3.36
   - 10.244.3.35
 
-rtpengine:
+# charts/voice-network - sizes the voice-pool NAD for FreeSWITCH, which now
+# owns its own net1 IP and anchors media directly with the SBC (ADR 002).
+freeswitch:
+  maxReplicas: 2              # matches charts/freeswitch's replicas today - no autoscaling yet
+  maxSurge: 1                 # default Deployment rollout surge for replicas: 2
+  poolHeadroom: 2
   pool:
     # Whereabouts' "range" CIDR sets the pod interface's subnet mask, not
     # just the allocatable set - using the narrow .128/26 slice here gave
-    # rtpengine pods a /26 mask, so the kernel treated the SBC (.5) as
-    # off-subnet and routed SBC-bound RTP out eth0 instead of net1, which
-    # is why reverse media never arrived. range_start/range_end restrict
-    # allocation to .128-.191 while range stays the real /24 segment.
+    # pods a /26 mask, so the kernel treated the SBC (.5) as off-subnet and
+    # routed SBC-bound RTP out eth0 instead of net1, which is why reverse
+    # media never arrived. range_start/range_end restrict allocation to
+    # .128-.191 while range stays the real /24 segment.
     rangeStart: 192.168.50.128
     rangeEnd: 192.168.50.191

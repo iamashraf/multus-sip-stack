@@ -21,9 +21,9 @@ down:
 	podman-compose down
 
 # Harness self-test: proves the sbc image and scenario XML work, run
-# loopback inside the sbc container. This does not exercise Kamailio,
-# rtpengine, or FreeSWITCH - those self-tests land with their own charts
-# in Phases 2-4, pointed at the real net1/pool IPs instead of 127.0.0.1.
+# loopback inside the sbc container. This does not exercise Kamailio or
+# FreeSWITCH - those self-tests land with their own charts in Phases 2-4,
+# pointed at the real net1/pool IPs instead of 127.0.0.1.
 test:
 	podman exec -d sbc sipp -sf /scenarios/uas.xml -i 127.0.0.1 -p 5061 -mi 127.0.0.1 -rtp_echo
 	sleep 1

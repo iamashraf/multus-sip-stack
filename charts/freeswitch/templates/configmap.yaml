@@ -4,8 +4,8 @@ metadata:
   name: freeswitch-vars
   namespace: {{ .Values.namespace }}
 data:
-  vars.xml: |-
-{{ .Files.Get "files/vars.xml" | indent 4 }}
+  vars.xml.tmpl: |-
+{{ .Files.Get "files/vars.xml.tmpl" | indent 4 }}
   internal.xml: |-
 {{ .Files.Get "files/internal.xml" | indent 4 }}
   drain.sh: |-

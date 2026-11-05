@@ -283,11 +283,16 @@
        If unspecified, the bind_server_ip value is used.
        Used by: sofia.conf.xml dingaling.conf.xml
   -->
-  <!-- No NAT on the voice path here (rtpengine <-> FreeSWITCH is pod-to-pod).
-       The "if unspecified, bind_server_ip is used" claim above didn't hold
-       in testing (sofia fell back to public-IP auto-detection instead), so
-       this is set explicitly rather than left unset. -->
-  <X-PRE-PROCESS cmd="set" data="external_rtp_ip=$${local_ip_v4}"/>
+  <!-- SIP stays on eth0 (pod network, toward Kamailio); RTP goes out net1
+       (voice VLAN, toward the SBC directly - see ADR 002).
+       __ETH0_IP__/__NET1_IP__ are substituted by entrypoint.sh at startup,
+       since they aren't known until the pod starts. The "if unspecified,
+       bind_server_ip is used" claim above didn't hold in testing (sofia
+       fell back to public-IP auto-detection instead), so both are set
+       explicitly rather than left unset. -->
+  <X-PRE-PROCESS cmd="set" data="sip_ip_v4=__ETH0_IP__"/>
+  <X-PRE-PROCESS cmd="set" data="rtp_ip_v4=__NET1_IP__"/>
+  <X-PRE-PROCESS cmd="set" data="external_rtp_ip=__NET1_IP__"/>
 
   <!-- external_sip_ip
       Used as the public IP address for SDP.
@@ -300,7 +305,7 @@
        If unspecified, the bind_server_ip value is used.
        Used by: sofia.conf.xml dingaling.conf.xml
   -->
-  <X-PRE-PROCESS cmd="set" data="external_sip_ip=$${local_ip_v4}"/>
+  <X-PRE-PROCESS cmd="set" data="external_sip_ip=__ETH0_IP__"/>
 
   <!-- unroll-loops
        Used to turn on sip loopback unrolling.
@@ -407,10 +412,10 @@
   <X-PRE-PROCESS cmd="set" data="sip_tls_ciphers=ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"/>
 
   <!-- Internal SIP Profile -->
-  <!-- shortcut: no registrar/auth - only Kamailio and rtpengine can reach
-       this profile by design (pod network, no Service exposing it), so
-       calls aren't challenged. Add a NetworkPolicy or re-enable auth if
-       that trust boundary ever widens. -->
+  <!-- shortcut: no registrar/auth - only Kamailio can reach this profile
+       by design (pod network, no Service exposing it), so calls aren't
+       challenged. Add a NetworkPolicy or re-enable auth if that trust
+       boundary ever widens. -->
   <X-PRE-PROCESS cmd="set" data="internal_auth_calls=false"/>
   <X-PRE-PROCESS cmd="set" data="internal_sip_port=5060"/>
   <X-PRE-PROCESS cmd="set" data="internal_tls_port=5061"/>

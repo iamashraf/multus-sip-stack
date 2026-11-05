@@ -97,9 +97,9 @@
     <param name="outbound-codec-prefs" value="$${global_codec_prefs}"/>
     <param name="rtp-timer-name" value="soft"/>
     <!-- ip address to use for rtp, DO NOT USE HOSTNAMES ONLY IP ADDRESSES -->
-    <param name="rtp-ip" value="$${local_ip_v4}"/>
+    <param name="rtp-ip" value="$${rtp_ip_v4}"/>
     <!-- ip address to bind to, DO NOT USE HOSTNAMES ONLY IP ADDRESSES -->
-    <param name="sip-ip" value="$${local_ip_v4}"/>
+    <param name="sip-ip" value="$${sip_ip_v4}"/>
     <param name="hold-music" value="$${hold_music}"/>
     <param name="apply-nat-acl" value="nat.auto"/>
 
@@ -132,8 +132,8 @@
     <!--<param name="enable-timer" value="false"/>-->
     <!--<param name="minimum-session-expires" value="120"/>-->
     <!-- shortcut: no inbound ACL - same trust assumption as
-         internal_auth_calls in vars.xml (only Kamailio/rtpengine can
-         reach this profile by network topology). -->
+         internal_auth_calls in vars.xml (only Kamailio can reach this
+         profile by network topology). -->
     <!-- <param name="apply-inbound-acl" value="domains"/> -->
     <!--
         This defines your local network, by default we detect your local network

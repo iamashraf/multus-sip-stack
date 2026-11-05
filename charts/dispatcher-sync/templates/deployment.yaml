@@ -14,6 +14,13 @@ spec:
         app: dispatcher-sync
     spec:
       serviceAccountName: dispatcher-sync
+      # Every lab worker is now a tainted voice node (FreeSWITCH needs net1
+      # too - see ADR 002), so this needs to tolerate the taint to schedule
+      # at all; it doesn't need net1 itself, so no nodeSelector/NAD.
+      tolerations:
+        - key: voice-node
+          operator: Exists
+          effect: NoSchedule
       containers:
         - name: dispatcher-sync
           image: {{ .Values.image }}

@@ -1,6 +1,5 @@
 namespace: voice
 image: localhost/kamailio:local
-rtpengineHost: rtpengine.voice.svc.cluster.local
 
 instances:
   - name: kamailio-a

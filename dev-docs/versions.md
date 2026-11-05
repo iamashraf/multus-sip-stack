@@ -10,15 +10,8 @@
 | Container runtime (local only) | Podman 6.1.4 (machine, netavark backend) | n/a — Docker not installed on this machine; see `dev-docs/local-lab.md` |
 | podman-compose (local only) | 1.6.0 | brings up `local/compose.yaml` (voice network + sbc); see `dev-docs/local-lab.md` for the `podman compose` incompatibility this avoids |
 
-Kamailio, rtpengine, and FreeSWITCH image tags are pinned in Phases 2-4 and added to this table then.
+Kamailio image tags are pinned once Phase 2 formalizes a build; FreeSWITCH is pinned below.
 
-## dispatcher-operator (Go module `config/dispatcher-operator`)
+| FreeSWITCH base image | ghcr.io/patrickbaus/freeswitch-docker:1.11.3 | `config/freeswitch/Dockerfile` |
 
-| Component | Version | Reference |
-|---|---|---|
-| sigs.k8s.io/controller-runtime | v0.25.2 | `config/dispatcher-operator/go.mod` |
-| k8s.io/client-go | v0.37.2 | `config/dispatcher-operator/go.mod` |
-| k8s.io/api | v0.37.2 | `config/dispatcher-operator/go.mod` |
-| k8s.io/apimachinery | v0.37.2 | `config/dispatcher-operator/go.mod` |
-| setup-envtest tool (test tooling only) | v0.25.2 | installed via `go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest` |
-| envtest Kubernetes test binaries (test tooling only) | kubebuilder-tools 1.37.0-darwin-arm64 | fetched by `setup-envtest use -p path`, exported as `KUBEBUILDER_ASSETS` for `go test` |
+A Go controller-runtime operator (`dispatcher-operator`) was built and evaluated as an alternative to `dispatcher-sync` (see ADR 001's necessity review) and removed - `dispatcher-sync` is the kept implementation.

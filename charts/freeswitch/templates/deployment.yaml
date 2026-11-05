@@ -12,10 +12,16 @@ spec:
     metadata:
       labels:
         app: freeswitch
+      annotations:
+        k8s.v1.cni.cncf.io/networks: voice-pool
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      tolerations:
+        - key: voice-node
+          operator: Exists
+          effect: NoSchedule
       nodeSelector:
-        voice-role: media
+        voice-role: voice
       containers:
         - name: freeswitch
           image: {{ .Values.image }}
@@ -25,14 +31,16 @@ spec:
               value: {{ .Values.namespace }}
             - name: DRAIN_TIMEOUT
               value: "{{ .Values.drainTimeoutSeconds }}"
+            - name: SBC_MEDIA_IP
+              value: "{{ .Values.sbcMediaIP }}"
           lifecycle:
             preStop:
               exec:
                 command: ["/bin/sh", "/drain.sh"]
           volumeMounts:
             - name: vars
-              mountPath: /etc/freeswitch/vars.xml
-              subPath: vars.xml
+              mountPath: /etc/freeswitch/vars.xml.tmpl
+              subPath: vars.xml.tmpl
             - name: vars
               mountPath: /etc/freeswitch/sip_profiles/internal.xml
               subPath: internal.xml

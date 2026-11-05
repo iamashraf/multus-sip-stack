@@ -1,4 +1,0 @@
-apiVersion: v2
-name: rtpengine
-description: Minimal rtpengine on the voice-pool NAD
-version: 0.1.0

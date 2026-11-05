@@ -52,12 +52,11 @@
     ]]>
   </send>
 
-  <!-- rtpengine won't relay media to an address it has never received a
-       packet from (symmetric RTP learning, not a bug) - this scenario
-       otherwise never sends anything, so FreeSWITCH's greeting/music
-       would have nowhere confirmed to go. A couple of packets here is
-       enough to prime that learning; codec mismatch with the pcap
-       doesn't matter for this purpose. -->
+  <!-- No media relay in the path anymore (see ADR 002) - FreeSWITCH sends
+       to whatever address the SDP answer gave it, no symmetric-RTP
+       learning needed. Kept as a harmless warm-up: this scenario
+       otherwise never sends anything on its own. Codec mismatch with the
+       pcap doesn't matter for this purpose. -->
   <nop>
     <action>
       <exec play_pcap_audio="pcap/g711a.pcap"/>

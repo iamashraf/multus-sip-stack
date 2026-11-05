@@ -1,4 +1,17 @@
 {{- $mode := ternary "bridge" "l2" (eq .Values.voiceNetwork.attachmentType "macvlan") }}
+{{- /*
+Pool-size guard: fails `helm template`/`helm install` early if the pool is
+too small for FreeSWITCH's own replica ceiling, rollout surge, and headroom.
+shortcut: assumes rangeStart/rangeEnd share the same first three octets
+(one /24) - doesn't support a range spanning a subnet boundary.
+*/}}
+{{- $startLast := (splitList "." .Values.freeswitch.pool.rangeStart | last | atoi) }}
+{{- $endLast := (splitList "." .Values.freeswitch.pool.rangeEnd | last | atoi) }}
+{{- $poolSize := add (sub $endLast $startLast) 1 }}
+{{- $needed := add (add .Values.freeswitch.maxReplicas .Values.freeswitch.maxSurge) .Values.freeswitch.poolHeadroom }}
+{{- if lt $poolSize $needed }}
+{{- fail (printf "voice-pool has %d addresses (%s-%s) but needs at least %d (maxReplicas=%v + maxSurge=%v + poolHeadroom=%v) - widen freeswitch.pool.rangeStart/rangeEnd" $poolSize .Values.freeswitch.pool.rangeStart .Values.freeswitch.pool.rangeEnd $needed .Values.freeswitch.maxReplicas .Values.freeswitch.maxSurge .Values.freeswitch.poolHeadroom) }}
+{{- end }}
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
@@ -14,8 +27,8 @@ spec:
       "ipam": {
         "type": "whereabouts",
         "range": "{{ .Values.voiceNetwork.subnet }}",
-        "range_start": "{{ .Values.rtpengine.pool.rangeStart }}",
-        "range_end": "{{ .Values.rtpengine.pool.rangeEnd }}"
+        "range_start": "{{ .Values.freeswitch.pool.rangeStart }}",
+        "range_end": "{{ .Values.freeswitch.pool.rangeEnd }}"
         {{- if .Values.voiceNetwork.routes }},
         "routes": [
           {{- range $i, $r := .Values.voiceNetwork.routes }}

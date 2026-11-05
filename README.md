@@ -1,19 +1,18 @@
 # multus-sip-stack
 
-A SIP voice stack (Kamailio + rtpengine + FreeSWITCH) that runs on ordinary Kubernetes, with no `hostNetwork` anywhere. Standard k8s networking (Services, kube-proxy, overlay NAT) can't carry a SIP/RTP call without breaking it, so this project uses Multus to give only the edge tier (Kamailio, rtpengine) a real address on the voice network, while every pod stays a normal, schedulable, unprivileged workload.
+A SIP voice stack (Kamailio + FreeSWITCH) that runs on ordinary Kubernetes, with no `hostNetwork` anywhere. Standard k8s networking (Services, kube-proxy, overlay NAT) can't carry a SIP/RTP call without breaking it, so this project uses Multus to give the voice-node tier (Kamailio, FreeSWITCH) a real address on the voice network, while every pod stays a normal, schedulable, unprivileged workload. The SBC anchors media directly with FreeSWITCH - there's no media relay in the cluster (see [ADR 002](dev-docs/adr/002-remove-rtpengine.md)).
 
 [Interactive runtime architecture diagram](https://iamashraf.github.io/multus-sip-stack/runtime-architecture.html) — the call path, the trust boundaries, and how membership and drain actually work, explorable in a browser.
 
 ## How it works
 
-A call enters through an SBC, which hands SIP signaling to one of two Kamailio instances and media to rtpengine. Kamailio dispatches the call to a FreeSWITCH pod; rtpengine anchors the RTP media between the SBC's voice VLAN and the cluster's pod network, so no pod-network IP ever reaches the SBC and no pod ever needs a routable VLAN address of its own.
+A call enters through an SBC, which hands SIP signaling to one of two Kamailio instances. Kamailio dispatches the call to a FreeSWITCH pod; the SBC and that FreeSWITCH pod exchange RTP directly over the voice VLAN, since FreeSWITCH owns its own voice-VLAN address (`net1`). No pod-network IP ever reaches the SBC, and nothing in the cluster relays media.
 
 | Component | Role | Network |
 |---|---|---|
 | SBC | Session border controller (SIPp stand-in locally) | Voice VLAN |
 | Kamailio (A/B) | SIP dispatcher, static IP | Voice VLAN + pod network |
-| rtpengine | Media relay, bridges the two networks | Voice VLAN + pod network |
-| FreeSWITCH | Media server, ordinary pod pool | Pod network only |
+| FreeSWITCH | Media server, anchors RTP with the SBC directly | Voice VLAN + pod network |
 | dispatcher-sync | Watches FreeSWITCH's EndpointSlice, keeps Kamailio's dispatcher list in sync | Pod network only |
 
 ## Concepts
@@ -32,7 +31,6 @@ A call enters through an SBC, which hands SIP signaling to one of two Kamailio i
 | EndpointSlice | Kubernetes' own live list of which pod IPs back a Service | [k8s docs](https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/) |
 | hostNetwork | A pod mode that shares the host's network namespace instead of getting its own | [k8s docs](https://kubernetes.io/docs/concepts/cluster-administration/networking/) |
 | Kamailio | The open-source SIP server acting as the dispatcher here | [kamailio.org](https://www.kamailio.org/w/) |
-| rtpengine | The open-source media relay that anchors RTP across the two networks | [sipwise/rtpengine](https://github.com/sipwise/rtpengine) |
 | FreeSWITCH | The open-source media server that answers calls and plays audio | [freeswitch.org](https://freeswitch.org/) |
 
 ## Design principles
@@ -59,7 +57,7 @@ See [dev-docs/local-lab.md](dev-docs/local-lab.md) for the node layout, Podman-o
 
 ## Verification
 
-- `test/sipp/media-flow-check.sh [kamailio-net1-ip]` plays a real recording through the whole stack and confirms RTP actually reaches rtpengine's voice-VLAN address — a successful SIP call alone doesn't prove that.
+- `test/sipp/media-flow-check.sh [kamailio-net1-ip]` plays a real recording through the stack and confirms RTP actually reaches FreeSWITCH's voice-VLAN address directly — a successful SIP call alone doesn't prove that.
 - `local/check-addresses.sh <pcap>` fails if any pod-network IP leaked into SIP or SDP, checked against a capture taken from a real endpoint (not a bystander container, which only sees broadcast traffic on the bridge).
 - `local/capture.sh [iface]` takes that capture from inside the sbc container.
 

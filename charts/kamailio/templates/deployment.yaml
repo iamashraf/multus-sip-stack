@@ -18,18 +18,15 @@ spec:
         k8s.v1.cni.cncf.io/networks: '[{"name":"voice-static","ips":["{{ .ip }}/24"]}]'
     spec:
       tolerations:
-        - key: voice-edge
+        - key: voice-node
           operator: Exists
           effect: NoSchedule
       nodeSelector:
-        voice-role: edge
+        voice-role: voice
       containers:
         - name: kamailio
           image: {{ $.Values.image }}
           imagePullPolicy: IfNotPresent
-          env:
-            - name: RTPENGINE_HOST
-              value: "{{ $.Values.rtpengineHost }}"
           volumeMounts:
             - name: dispatcher
               mountPath: /etc/kamailio/dispatcher.list

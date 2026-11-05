@@ -7,10 +7,9 @@ A kind cluster on one laptop that reproduces the production network shape, so Ph
 | Node role | What it is |
 |---|---|
 | control-plane | kind control plane |
-| edge x2 (`voice-role=edge`, tainted `voice-edge=true:NoSchedule`) | attached to the `voice` network via a second interface, same as production edge nodes |
-| media x1 (`voice-role=media`) | plain pod network only, same as production FreeSWITCH nodes |
+| voice x3 (`voice-role=voice`, tainted `voice-node=true:NoSchedule`) | attached to the `voice` network via a second interface, same as production voice nodes. Kamailio and FreeSWITCH both schedule here now - FreeSWITCH anchors media with the SBC directly (see ADR 002), not just Kamailio for SIP |
 
-`compose.yaml` declares the `voice` network and the `sbc` container (a SIPp-based stand-in for the real SBC, on a fixed IP) as one unit - `podman-compose up`/`down` brings up or tears down both together. kind owns its own node containers, so they can't be compose services; `voice-net.sh` is what attaches the two kind-managed edge workers to that same network afterward.
+`compose.yaml` declares the `voice` network and the `sbc` container (a SIPp-based stand-in for the real SBC, on a fixed IP) as one unit - `podman-compose up`/`down` brings up or tears down both together. kind owns its own node containers, so they can't be compose services; `voice-net.sh` is what attaches the three kind-managed voice workers to that same network afterward.
 
 ## Known differences from production
 
@@ -32,13 +31,13 @@ Two Podman-on-macOS gotchas hit while building this, in case they resurface:
 ```
 cd local
 make up       # kind cluster, voice network + sbc container (compose.yaml), Multus + Whereabouts
-make test     # harness self-test: SIPp loopback inside the sbc container (see Makefile comment - this doesn't touch Kamailio/rtpengine/FreeSWITCH yet)
+make test     # harness self-test: SIPp loopback inside the sbc container (see Makefile comment - this doesn't touch Kamailio/FreeSWITCH yet)
 make capture IFACE=eth0                          # tcpdump from inside the sbc container (see capture.sh for why not a bystander container)
 make check PCAP=./voice-capture.pcap             # fail if a pod-network IP leaked into SIP/SDP
 make down     # full teardown
 ```
 
-`test/sipp/media-flow-check.sh [kamailio-net1-ip]` plays a real recording through the stack (`uac-media.xml`) and confirms actual RTP reaches rtpengine's `net1` address - a successful SIP call alone doesn't prove that; `-rtp_echo` only echoes RTP it receives.
+`test/sipp/media-flow-check.sh [kamailio-net1-ip]` plays a real recording through the stack (`uac-media.xml`) and confirms actual RTP reaches FreeSWITCH's `net1` address directly - a successful SIP call alone doesn't prove that; `-rtp_echo` only echoes RTP it receives.
 
 `sbc/scenarios/` has four SIPp scenarios: `uac.xml` and `uas.xml` are a matched pair (used by `make test`); `hold-reinvite.xml` and `long-call.xml` are UAC-side only and need a real in-dialog-aware peer, so they're run against Kamailio/FreeSWITCH starting Phase 2, not against `uas.xml` - see the shortcut note in `uas.xml`.
 

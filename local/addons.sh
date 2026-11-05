@@ -14,7 +14,7 @@ CNI_PLUGINS_TAG=v1.9.1
 # [/opt/cni/bin]" until these are copied in.
 install_cni_plugins() {
   local edge_nodes tmp
-  edge_nodes=$(kubectl get nodes -l voice-role=edge -o jsonpath='{.items[*].metadata.name}')
+  edge_nodes=$(kubectl get nodes -l voice-role=voice -o jsonpath='{.items[*].metadata.name}')
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
   curl -sSL -o "$tmp/cni-plugins.tgz" \
