@@ -1,4 +1,4 @@
 apiVersion: v2
 name: freeswitch
-description: Minimal FreeSWITCH pool - pod network only, default dialplan echo test
+description: Minimal FreeSWITCH pool. Attaches to the voice VLAN via the voice-pool Multus network for direct SBC media, default dialplan echo test
 version: 0.1.0
