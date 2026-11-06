@@ -1,8 +1,8 @@
 # multus-sip-stack
 
-A SIP voice stack (Kamailio + FreeSWITCH) that runs on ordinary Kubernetes, with no `hostNetwork` anywhere. Standard k8s networking (Services, kube-proxy, overlay NAT) can't carry a SIP/RTP call without breaking it, so this project uses Multus to give the voice-node tier (Kamailio, FreeSWITCH) a real address on the voice network, while every pod stays a normal, schedulable, unprivileged workload. The SBC anchors media directly with FreeSWITCH - there's no media relay in the cluster (see [ADR 002](dev-docs/adr/002-remove-rtpengine.md)).
+A SIP voice stack (Kamailio + FreeSWITCH) that runs on ordinary Kubernetes, with no `hostNetwork` anywhere. Standard k8s networking (Services, kube-proxy, overlay NAT) can't carry a SIP/RTP call without breaking it, so this project uses Multus to give the voice-node tier (Kamailio, FreeSWITCH) a real address on the voice network, while every pod stays a normal, schedulable, unprivileged workload. The SBC anchors media directly with FreeSWITCH. There's no media relay in the cluster (see [ADR 002](dev-docs/adr/002-remove-rtpengine.md)).
 
-[Interactive runtime architecture diagram](https://iamashraf.github.io/multus-sip-stack/runtime-architecture.html) — the call path, the trust boundaries, and how membership and drain actually work, explorable in a browser.
+[Interactive runtime architecture diagram](https://iamashraf.github.io/multus-sip-stack/runtime-architecture.html), explorable in a browser: the call path, the trust boundaries, and how membership and drain actually work.
 
 ## How it works
 
@@ -57,7 +57,7 @@ See [dev-docs/local-lab.md](dev-docs/local-lab.md) for the node layout, Podman-o
 
 ## Verification
 
-- `test/sipp/media-flow-check.sh [kamailio-net1-ip]` plays a real recording through the stack and confirms RTP actually reaches FreeSWITCH's voice-VLAN address directly — a successful SIP call alone doesn't prove that.
+- `test/sipp/media-flow-check.sh [kamailio-net1-ip]` plays a real recording through the stack and confirms RTP actually reaches FreeSWITCH's voice-VLAN address directly. A successful SIP call alone doesn't prove that.
 - `local/check-addresses.sh <pcap>` fails if any pod-network IP leaked into SIP or SDP, checked against a capture taken from a real endpoint (not a bystander container, which only sees broadcast traffic on the bridge).
 - `local/capture.sh [iface]` takes that capture from inside the sbc container.
 
@@ -65,9 +65,9 @@ See [dev-docs/verification.md](dev-docs/verification.md) for the full end-to-end
 
 ## Repo layout
 
-- `charts/` — Helm charts, one per component
-- `config/` — build sources (Dockerfiles, entrypoints, app config) that the charts deploy
-- `environments/` — one `values.yaml` per environment (`local`, with `lab` reserved for RKE2)
-- `local/` — the kind-based local lab (compose network, SIPp SBC, helper scripts)
-- `test/` — verification scripts and manifests
-- `dev-docs/` — detailed architecture, local-lab notes, prerequisites, and ADRs
+- `charts/` holds Helm charts, one per component
+- `config/` holds the build sources (Dockerfiles, entrypoints, app config) that the charts deploy
+- `environments/` holds one `values.yaml` per environment (`local`, with `lab` reserved for RKE2)
+- `local/` is the kind-based local lab (compose network, SIPp SBC, helper scripts)
+- `test/` holds verification scripts and manifests
+- `dev-docs/` holds detailed architecture, local-lab notes, prerequisites, and ADRs

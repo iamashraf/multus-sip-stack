@@ -29,11 +29,11 @@ Run after fixing three real bugs a load test (see ADR 002) surfaced while testin
 
 Scenario: `local/sbc/scenarios/uac-call-flow.xml` against FreeSWITCH's `demo_connected` extension (9200): answer, listen to the real greeting, hold (re-INVITE `a=sendonly`), wait, unhold (re-INVITE `a=sendrecv`), send real audio into `echo()`, hang up. Unlike the `demo_voice`/9199 recording above (which plays a fixed script regardless of hold state), this proves the "connected" phase is an actual two-way call: the audio FreeSWITCH sends back is the SBC's own audio coming straight through `echo()`, not a pre-recorded prompt.
 
-This scenario's audio (`pcap/g711a.pcap`) is PCMA (A-law, RTP payload type 8), not PCMU - the first version of this scenario negotiated PCMU and FreeSWITCH correctly discarded every packet, which looked identical to a FreeSWITCH/hold bug until a capture showed the payload type mismatch directly. Fixed by changing the scenario's SDP to `RTP/AVP 8`/`a=rtpmap:8 PCMA/8000`.
+This scenario's audio (`pcap/g711a.pcap`) is PCMA (A-law, RTP payload type 8), not PCMU. The first version of this scenario negotiated PCMU, and FreeSWITCH correctly discarded every packet. That looked identical to a FreeSWITCH/hold bug until a capture showed the payload type mismatch directly. Fixed by changing the scenario's SDP to `RTP/AVP 8`/`a=rtpmap:8 PCMA/8000`.
 
 - **Call completed end-to-end**: all 17 SIP messages (INVITE/hold/unhold/BYE) got the expected response, 0 failures.
 - **Hold actually silenced the stream**: `packets-per-second.txt` shows FreeSWITCH → SBC RTP at seconds 10-13 (welcome), then nothing at 14-16 (on hold).
-- **The call actually reconnected, not just a 200'd re-INVITE**: RTP resumes at second 17 (right after the unhold `200 OK`) and continues through second 21 - FreeSWITCH is echoing the SBC's own audio back in real time.
+- **The call actually reconnected, not just a 200'd re-INVITE**: RTP resumes at second 17 (right after the unhold `200 OK`) and continues through second 21. FreeSWITCH is echoing the SBC's own audio back in real time.
 - **Real audio, not silence**: `audio.wav` decodes to a mean volume of -26.5 dB, max -6.2 dB.
 - **SIP headers stayed clean**: `check-addresses.sh` passed, same topos proof as the recording above.
 - Run twice more (not committed) with consistent results (-26.5 dB both times, same gap/resume pattern) before trusting this one.
