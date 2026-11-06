@@ -742,6 +742,21 @@
       </condition>
     </extension>
 
+    <!-- Same welcome prompt as demo_voice, but then echo() instead of a
+         fixed-length script - echo() runs until the caller hangs up, so
+         the call controls its own "connected" duration instead of
+         racing demo_voice's short, fixed auto-hangup timeline. Used for
+         a full welcome -> hold -> connected -> hangup proof where
+         "connected" has to be long enough to show real two-way audio. -->
+    <extension name="demo_connected">
+      <condition field="destination_number" expression="^9200$">
+	<action application="answer"/>
+	<action application="sleep" data="500"/>
+	<action application="playback" data="ivr/ivr-welcome_to_freeswitch.wav"/>
+	<action application="echo"/>
+      </condition>
+    </extension>
+
     <extension name="milliwatt">
       <condition field="destination_number" expression="^9197$">
 	<action application="answer"/>

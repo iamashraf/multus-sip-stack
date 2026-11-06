@@ -1,0 +1,4 @@
+--- summary ---
+PASS: real audio decoded, mean volume -26.5dB (not silence)
+PASS: a >=2s gap in FreeSWITCH->SBC RTP was observed (hold silenced the stream)
+PASS: FreeSWITCH->SBC RTP resumed after the hold gap (second 21, connected phase is real two-way audio)
